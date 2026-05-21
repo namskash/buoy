@@ -74,15 +74,14 @@ export function createStore({ filePath }) {
       return enqueue(async () => {
         const items = await readItems();
         const newTask = withDefaults({
-          kind: 'task',
           title,
           priority,
           description,
           done: false,
         });
         items.push({ kind: 'task', ...newTask });
-        const filled = await writeItems(items);
-        return tasksOnly(filled).find((t) => t.id === newTask.id);
+        await writeItems(items);
+        return newTask;
       });
     },
 
