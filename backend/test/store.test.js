@@ -85,6 +85,18 @@ describe('store', () => {
     expect(onDisk).toMatch(/- \[ \] hand <!-- id:\S+ priority:3 created:[^ ]+ -->/);
   });
 
+  it('subscribe is called on every mutation', async () => {
+    const store = createStore({ filePath: fx.filePath });
+    let count = 0;
+    store.subscribe(() => count++);
+    const t = await store.create({ title: 'X', priority: 3 });
+    await store.update(t.id, { done: true });
+    await store.remove(t.id);
+    // setImmediate makes the emit async — wait a tick.
+    await new Promise((r) => setImmediate(r));
+    expect(count).toBe(3);
+  });
+
   it('wasJustWritten flips true right after a write', async () => {
     const store = createStore({ filePath: fx.filePath });
     expect(store.wasJustWritten()).toBe(false);

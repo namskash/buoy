@@ -9,6 +9,7 @@
 // each other's changes. The queue forces one read-modify-write at a time.
 
 import { readFile, writeFile } from 'node:fs/promises';
+import { EventEmitter } from 'node:events';
 import { nanoid } from 'nanoid';
 import { parse, tasksOnly } from './parser.js';
 import { serialize } from './serializer.js';
@@ -35,6 +36,7 @@ export function createStore({ filePath }) {
   let writeChain = Promise.resolve();
   // Timestamp of our most recent write — watcher uses this to ignore echoes.
   let lastWriteAt = 0;
+  const emitter = new EventEmitter();
 
   async function readItems() {
     const text = await readFile(filePath, 'utf8');
@@ -51,6 +53,8 @@ export function createStore({ filePath }) {
     );
     await writeFile(filePath, serialize(filled), 'utf8');
     lastWriteAt = Date.now();
+    // Fire & forget. Listeners deal with errors.
+    setImmediate(() => emitter.emit('changed'));
     return filled;
   }
 
@@ -125,6 +129,13 @@ export function createStore({ filePath }) {
     // For the watcher to detect "did we just write this?".
     wasJustWritten(withinMs = 250) {
       return Date.now() - lastWriteAt < withinMs;
+    },
+
+    // Listeners fire after every successful internal mutation.
+    // Returns an unsubscribe function.
+    subscribe(fn) {
+      emitter.on('changed', fn);
+      return () => emitter.off('changed', fn);
     },
   };
 }
