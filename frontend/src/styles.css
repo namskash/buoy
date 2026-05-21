@@ -1,0 +1,136 @@
+/* Skeleton CSS. The bubbles get their own canvas in milestone 5;
+   this just makes the plain list readable while we wire things up. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
+}
+
+.ws-dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px currentColor;
+}
+.ws-dot.on { background: #22c55e; }
+
+.add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  background: #1e293b;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.add input[type="text"] {
+  flex: 1 1 200px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: inherit;
+  font: inherit;
+}
+.add label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+.priority-value {
+  display: inline-block;
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.add button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 0;
+  background: #6366f1;
+  color: white;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.add button:hover { background: #4f46e5; }
+
+.todos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.todos li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #1e293b;
+}
+.todos li.done {
+  opacity: 0.55;
+}
+.todos li.done .title {
+  text-decoration: line-through;
+}
+.prio {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  background: #334155;
+  color: #cbd5e1;
+}
+.prio-5 { background: #ef4444; color: white; }
+.prio-4 { background: #f97316; color: white; }
+.prio-3 { background: #eab308; color: #1f2937; }
+.prio-2 { background: #38bdf8; color: #0f172a; }
+.prio-1 { background: #64748b; color: white; }
+.title { flex: 1; }
+.desc { color: #94a3b8; font-size: 0.85rem; }
+.del {
+  background: transparent;
+  border: 0;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.del:hover { color: #ef4444; }
+
+.status { color: #94a3b8; }
+.status.error { color: #fca5a5; }
+
+footer {
+  margin-top: 1.5rem;
+  color: #64748b;
+}
