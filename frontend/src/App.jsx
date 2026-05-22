@@ -1,8 +1,9 @@
-// Skeleton App. Plain list + a tiny add form, so we can confirm the data
-// pipeline works end-to-end. Bubble physics arrives in milestone 5.
+// App shell: header, add form, bubble canvas. The canvas does the physics;
+// this file is mostly form state + wiring.
 
 import { useState } from 'react';
 import { useTodos } from './useTodos.js';
+import BubbleCanvas from './components/BubbleCanvas.jsx';
 
 export default function App() {
   const { todos, loading, error, connected, add, toggle, remove } = useTodos();
@@ -17,17 +18,12 @@ export default function App() {
     setPriority(3);
   }
 
-  // Sort: incomplete first, highest priority first.
-  const sorted = [...todos].sort((a, b) => {
-    if (a.done !== b.done) return a.done ? 1 : -1;
-    return b.priority - a.priority;
-  });
-
   return (
     <div className="app">
       <header>
         <h1>Buoy</h1>
         <span className={`ws-dot ${connected ? 'on' : 'off'}`} title={connected ? 'live' : 'reconnecting'} />
+        {error && <span className="status error">· {error.message}</span>}
       </header>
 
       <form className="add" onSubmit={onSubmit}>
@@ -46,28 +42,22 @@ export default function App() {
             value={priority}
             onChange={(e) => setPriority(Number(e.target.value))}
           />
-          <span className="priority-value">{priority}</span>
+          <span className={`priority-value prio-${priority}`}>P{priority}</span>
         </label>
         <button type="submit">Add</button>
       </form>
 
-      {loading && <p className="status">Loading…</p>}
-      {error && <p className="status error">Error: {error.message}</p>}
-
-      <ul className="todos">
-        {sorted.map((t) => (
-          <li key={t.id} className={t.done ? 'done' : ''}>
-            <input type="checkbox" checked={t.done} onChange={() => toggle(t)} />
-            <span className={`prio prio-${t.priority}`}>P{t.priority}</span>
-            <span className="title">{t.title}</span>
-            {t.description && <span className="desc">— {t.description}</span>}
-            <button className="del" onClick={() => remove(t.id)} title="delete">✕</button>
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <p className="status">Loading…</p>
+      ) : (
+        <BubbleCanvas todos={todos} onToggle={toggle} onRemove={remove} />
+      )}
 
       <footer>
-        <small>{todos.length} todo{todos.length !== 1 ? 's' : ''} · {connected ? 'live sync on' : 'offline'}</small>
+        <small>
+          {todos.length} todo{todos.length !== 1 ? 's' : ''} · {connected ? 'live sync on' : 'offline'}
+          <span className="hint"> · click to toggle · double-click to delete · drag to throw</span>
+        </small>
       </footer>
     </div>
   );
