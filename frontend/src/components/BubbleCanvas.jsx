@@ -102,6 +102,33 @@ export default function BubbleCanvas({ todos, onToggle, onRemove }) {
       if (mouseConstraint.body) dragInfoRef.current.moved = true;
     });
 
+    // Pairwise attraction so bubbles cluster instead of spreading.
+    // Newtonian-ish: force ∝ m1*m2 / distance². We clamp the minimum
+    // distance so bubbles don't infinity-force each other when overlapping.
+    // G is tiny but compounds across many pairs; tune by feel.
+    const G = 4e-7;
+    const MIN_DIST = 80;
+    Events.on(engine, 'beforeUpdate', () => {
+      const bodies = [...bodiesRef.current.values()];
+      for (let i = 0; i < bodies.length; i++) {
+        const a = bodies[i];
+        if (a.isStatic) continue;
+        for (let j = i + 1; j < bodies.length; j++) {
+          const b = bodies[j];
+          if (b.isStatic) continue;
+          const dx = b.position.x - a.position.x;
+          const dy = b.position.y - a.position.y;
+          const distSq = Math.max(MIN_DIST * MIN_DIST, dx * dx + dy * dy);
+          const dist = Math.sqrt(distSq);
+          const mag = (G * a.mass * b.mass) / distSq;
+          const fx = (dx / dist) * mag;
+          const fy = (dy / dist) * mag;
+          Body.applyForce(a, a.position, { x: fx, y: fy });
+          Body.applyForce(b, b.position, { x: -fx, y: -fy });
+        }
+      }
+    });
+
     // Periodic random nudge so bubbles never look perfectly static.
     const bobInterval = setInterval(() => {
       for (const body of bodiesRef.current.values()) {

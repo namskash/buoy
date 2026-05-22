@@ -165,6 +165,56 @@ function onPointerUp(e, todo) {
 
 Double-click deletes. matter.js doesn't fight us on that — `dblclick` fires after a normal click, and we don't bind a delete handler to `click`.
 
+## Pairwise attraction (bubbles cluster together)
+
+If we only had gravity + walls, bubbles would spread out evenly along the top wall — eight bubbles would be eight equally-spaced dots. We want them to feel social: drift toward each other, pack into a single cluster, react when a new one joins.
+
+The way to get that is a **pairwise attractive force** between every pair of bubbles, applied every physics tick:
+
+```js
+const G = 4e-7;
+const MIN_DIST = 80;
+Events.on(engine, 'beforeUpdate', () => {
+  const bodies = [...bodiesRef.current.values()];
+  for (let i = 0; i < bodies.length; i++) {
+    const a = bodies[i];
+    for (let j = i + 1; j < bodies.length; j++) {
+      const b = bodies[j];
+      const dx = b.position.x - a.position.x;
+      const dy = b.position.y - a.position.y;
+      const distSq = Math.max(MIN_DIST * MIN_DIST, dx*dx + dy*dy);
+      const dist = Math.sqrt(distSq);
+      const mag = (G * a.mass * b.mass) / distSq;        // Newton's law
+      const fx = (dx / dist) * mag;
+      const fy = (dy / dist) * mag;
+      Body.applyForce(a, a.position, { x:  fx, y:  fy }); // pull A toward B
+      Body.applyForce(b, b.position, { x: -fx, y: -fy }); // and B toward A
+    }
+  }
+});
+```
+
+What's happening:
+
+- This is **Newton's law of gravitation** scaled down: `F = G · m₁·m₂ / r²`. The constant `G` is tiny because it accumulates over many pairs and we don't want bubbles snapping together violently.
+- We compute the force once per pair and apply it equally in both directions (Newton's third law — `applyForce(a, +F)` and `applyForce(b, -F)`).
+- **`MIN_DIST`** clamps the minimum distance used in the divisor. Without it, when two bubbles overlap (`r` ≈ 0), the inverse-square term explodes and they catapult each other across the screen.
+- It runs on `engine.on('beforeUpdate')` — matter.js's hook for "after I've decided what each body wants to do, but before I integrate motion". The right place to inject custom forces.
+
+### Tuning
+
+The relative balance of three forces decides the look:
+
+| Force                     | What it does                                    |
+| ------------------------- | ----------------------------------------------- |
+| Upward gravity (`-0.4`)   | Pushes everything against the top wall          |
+| Attraction (`G = 4e-7`)   | Squeezes the top-wall cluster horizontally       |
+| Random nudges (every 1.5s) | Stops the cluster from going visually still     |
+
+With these numbers, 7 bubbles that would have lined up across the full canvas width instead pack into ~half of it, touching neighbours. If you want them looser, halve `G`. If you want them welded together, double it.
+
+**Why O(n²) is fine:** for tens of bubbles, the inner loop runs hundreds of times per tick — trivial. If we ever had thousands, we'd swap in a quadtree or use the `matter-attractors` plugin's bucketing. Not worth it here.
+
 ## Random nudges
 
 Without forces, bubbles eventually settle against the top wall in a stable arrangement and become static. To keep them lively, every 1.5s we apply a tiny random force to every body:
