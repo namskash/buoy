@@ -20,18 +20,17 @@ body {
   gap: 0.75rem;
 }
 
+/* Header --------------------------------------------------------- */
 header {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
 }
-
 h1 {
   margin: 0;
   font-size: 2rem;
   letter-spacing: -0.02em;
 }
-
 .ws-dot {
   display: inline-block;
   width: 0.55rem;
@@ -41,68 +40,15 @@ h1 {
   box-shadow: 0 0 8px currentColor;
 }
 .ws-dot.on { background: #22c55e; }
+.counts {
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+.counts strong { color: #e2e8f0; }
+.dim { color: #64748b; }
 
-.add {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  background: #1e293b88;
-  backdrop-filter: blur(6px);
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #334155;
-}
-.add input[type="text"] {
-  flex: 1 1 200px;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #334155;
-  background: #0f172a;
-  color: inherit;
-  font: inherit;
-}
-.add input[type="text"]:focus {
-  outline: 2px solid #6366f1;
-  outline-offset: -1px;
-}
-.add label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-.priority-value {
-  display: inline-block;
-  min-width: 2.2rem;
-  text-align: center;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  color: white;
-}
-.prio-5 { background: #ef4444; }
-.prio-4 { background: #f97316; }
-.prio-3 { background: #eab308; color: #1f2937; }
-.prio-2 { background: #38bdf8; color: #0f172a; }
-.prio-1 { background: #64748b; }
-
-.add button {
-  padding: 0.55rem 1.1rem;
-  border-radius: 0.5rem;
-  border: 0;
-  background: #6366f1;
-  color: white;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.add button:hover { background: #4f46e5; }
-
-/* The physics playground. Position: relative so bubbles can be absolutely
-   positioned against it. Take all remaining vertical space. */
+/* Bubble canvas + bubbles --------------------------------------- */
 .bubble-canvas {
   flex: 1 1 auto;
   position: relative;
@@ -114,10 +60,19 @@ h1 {
   border: 1px solid #1e293b;
 }
 
-.bubble {
+/* OUTER wrapper: matter.js writes transform here. We don't transition it. */
+.bubble-wrapper {
   position: absolute;
   top: 0;
   left: 0;
+  will-change: transform;
+  pointer-events: none; /* let inner bubble own the cursor */
+}
+
+/* INNER bubble: framer-motion animates scale/opacity. */
+.bubble {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   border: 2px solid;
   display: flex;
@@ -130,23 +85,12 @@ h1 {
   user-select: none;
   touch-action: none;
   cursor: grab;
+  pointer-events: auto;
   box-shadow:
     inset -8px -8px 12px #0006,
     0 4px 12px #0007;
-  transition: filter 0.15s, transform 0.15s;
-  will-change: transform;
 }
-.bubble:hover {
-  filter: brightness(1.15) saturate(1.2);
-}
-.bubble:active {
-  cursor: grabbing;
-}
-.bubble.done {
-  filter: grayscale(0.6) brightness(0.6);
-  text-decoration: line-through;
-  text-decoration-thickness: 1.5px;
-}
+.bubble:active { cursor: grabbing; }
 .bubble-title {
   text-align: center;
   padding: 0 0.5rem;
@@ -156,11 +100,171 @@ h1 {
   max-width: 100%;
 }
 
+/* Floating + button --------------------------------------------- */
+.fab {
+  position: fixed;
+  right: 1.75rem;
+  bottom: 1.75rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: 0;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 300;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: 0 8px 24px #0007, 0 0 0 0 #6366f1aa;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px #0008, 0 0 0 8px #6366f122;
+}
+.fab-plus {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.fab-open .fab-plus { transform: rotate(45deg); }
+
+/* Modal (shared by Add + Detail) -------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #020617cc;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+.modal {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid #334155;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: min(420px, 100%);
+  box-shadow: 0 20px 60px #000a;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+.modal label {
+  display: block;
+  margin-bottom: 0.85rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.modal input[type="text"],
+.modal textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.3rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  background: #0b1220;
+  color: #e2e8f0;
+  font: inherit;
+  resize: vertical;
+}
+.modal input[type="text"]:focus,
+.modal textarea:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: -1px;
+}
+.priority-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.3rem;
+}
+.priority-row input[type="range"] { flex: 1; }
+
+.priority-value {
+  display: inline-block;
+  min-width: 2.2rem;
+  text-align: center;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: white;
+}
+.prio-5 { background: #ef4444; }
+.prio-4 { background: #f97316; }
+.prio-3 { background: #eab308; color: #1f2937; }
+.prio-2 { background: #38bdf8; color: #0f172a; }
+.prio-1 { background: #64748b; }
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.modal-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 0;
+  background: #6366f1;
+  color: white;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-actions button:hover { background: #4f46e5; }
+.modal-actions button.ghost {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+}
+.modal-actions button.ghost:hover { background: #1e293b; }
+.modal-actions button.danger {
+  background: transparent;
+  border: 1px solid #7f1d1d;
+  color: #fca5a5;
+}
+.modal-actions button.danger:hover { background: #7f1d1d22; }
+
+/* Detail overlay specifics --------------------------------------- */
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.detail-header h2 { margin: 0; flex: 1; }
+.detail-desc {
+  margin: 0 0 1rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+.detail-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.detail-meta dt { color: #64748b; }
+.detail-meta dd { margin: 0; color: #cbd5e1; }
+.detail-meta code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+/* Misc */
 .status { color: #94a3b8; margin: 0; }
 .status.error { color: #fca5a5; font-size: 0.85rem; font-weight: 500; }
 
-footer {
-  color: #64748b;
-  font-size: 0.8rem;
-}
+footer { color: #64748b; font-size: 0.8rem; }
 footer .hint { color: #475569; }

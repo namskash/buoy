@@ -1,22 +1,25 @@
-// App shell: header, add form, bubble canvas. The canvas does the physics;
-// this file is mostly form state + wiring.
+// App shell. The bubble canvas only sees ACTIVE todos — completed ones
+// pop and disappear; they live on as `- [x]` in todos.md for history.
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTodos } from './useTodos.js';
 import BubbleCanvas from './components/BubbleCanvas.jsx';
+import AddTodoModal from './components/AddTodoModal.jsx';
+import DetailOverlay from './components/DetailOverlay.jsx';
 
 export default function App() {
   const { todos, loading, error, connected, add, toggle, remove } = useTodos();
-  const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState(3);
+  const [detailId, setDetailId] = useState(null);
 
-  function onSubmit(e) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    add({ title: title.trim(), priority });
-    setTitle('');
-    setPriority(3);
-  }
+  // Canvas shows active todos only. Counts shown separately for context.
+  const activeTodos = useMemo(() => todos.filter((t) => !t.done), [todos]);
+  const doneCount = todos.length - activeTodos.length;
+
+  // Detail overlay binds to the latest todo each render (in case it updates).
+  const detailTodo = useMemo(
+    () => (detailId ? todos.find((t) => t.id === detailId) : null),
+    [detailId, todos],
+  );
 
   return (
     <div className="app">
@@ -24,39 +27,36 @@ export default function App() {
         <h1>Buoy</h1>
         <span className={`ws-dot ${connected ? 'on' : 'off'}`} title={connected ? 'live' : 'reconnecting'} />
         {error && <span className="status error">· {error.message}</span>}
+        <span className="counts">
+          <strong>{activeTodos.length}</strong> active
+          {doneCount > 0 && <> · <span className="dim">{doneCount} done</span></>}
+        </span>
       </header>
-
-      <form className="add" onSubmit={onSubmit}>
-        <input
-          type="text"
-          placeholder="What needs doing?"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <label>
-          Priority
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={priority}
-            onChange={(e) => setPriority(Number(e.target.value))}
-          />
-          <span className={`priority-value prio-${priority}`}>P{priority}</span>
-        </label>
-        <button type="submit">Add</button>
-      </form>
 
       {loading ? (
         <p className="status">Loading…</p>
       ) : (
-        <BubbleCanvas todos={todos} onToggle={toggle} onRemove={remove} />
+        <BubbleCanvas
+          todos={activeTodos}
+          onToggle={toggle}
+          onRemove={remove}
+          onShowDetails={(t) => setDetailId(t.id)}
+        />
       )}
+
+      <AddTodoModal onAdd={add} />
+
+      <DetailOverlay
+        todo={detailTodo}
+        onClose={() => setDetailId(null)}
+        onToggle={toggle}
+        onRemove={remove}
+      />
 
       <footer>
         <small>
-          {todos.length} todo{todos.length !== 1 ? 's' : ''} · {connected ? 'live sync on' : 'offline'}
-          <span className="hint"> · click to toggle · double-click to delete · drag to throw</span>
+          {connected ? 'live sync on' : 'offline'}
+          <span className="hint"> · click: done · right-click / hold: details · dbl-click: delete · drag: throw</span>
         </small>
       </footer>
     </div>
