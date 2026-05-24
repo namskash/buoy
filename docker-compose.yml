@@ -1,0 +1,45 @@
+# Dev stack: one container for the API+WS server, one for Vite.
+# Source directories are bind-mounted from the host so editing locally
+# triggers hot reload inside the containers. data/todos.md is bind-mounted
+# too, so editing it on the host (in any text editor) syncs into the
+# backend container and the running app sees the change instantly.
+
+services:
+  backend:
+    build: ./backend
+    container_name: buoy-backend
+    ports:
+      - "3004:3004"
+    volumes:
+      # The todos.md file (the "database"). Host ↔ container, bidirectional.
+      - ./data:/app/data
+      # Live-reload source code from host.
+      - ./backend/src:/app/src
+      - ./backend/test:/app/test
+      # Anonymous volume for node_modules — prevents the host's (possibly
+      # empty, possibly wrong-arch) node_modules from overriding the
+      # container's after the first source mount. Without this, npm ci
+      # from the image gets shadowed by the bind mount.
+      - /app/node_modules
+    environment:
+      TODOS_FILE: /app/data/todos.md
+      PORT: "3004"
+
+  frontend:
+    build: ./frontend
+    container_name: buoy-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.js:/app/vite.config.js
+      - /app/node_modules
+    environment:
+      # In compose the backend is reachable at the service name, but the
+      # browser is on the HOST, not in the container — so it still needs
+      # localhost URLs. These are the URLs Vite injects into client JS.
+      VITE_API_URL: http://localhost:3004
+      VITE_WS_URL: ws://localhost:3004/ws
+    depends_on:
+      - backend
