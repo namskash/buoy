@@ -60,24 +60,30 @@ export default function App() {
         </div>
       </header>
 
-      {showReconnectBanner && (
-        <div className="banner banner-warn" role="status">
-          Can't reach the server. Retrying… (attempt {reconnectAttempts})
-        </div>
-      )}
+      <div className="canvas-wrap">
+        {showReconnectBanner && (
+          <div className="banner" role="status" aria-live="polite">
+            <span className="banner-dot" aria-hidden="true" />
+            <span>
+              Can't reach the server. Retrying…
+              <span className="banner-faint"> attempt {reconnectAttempts}</span>
+            </span>
+          </div>
+        )}
 
-      {loading ? (
-        <LoadingSkeleton />
-      ) : activeTodos.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <BubbleCanvas
-          todos={activeTodos}
-          onToggle={toggle}
-          onRemove={remove}
-          onShowDetails={(t) => setDetailId(t.id)}
-        />
-      )}
+        {loading ? (
+          <LoadingSkeleton />
+        ) : activeTodos.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <BubbleCanvas
+            todos={activeTodos}
+            onToggle={toggle}
+            onRemove={remove}
+            onShowDetails={(t) => setDetailId(t.id)}
+          />
+        )}
+      </div>
 
       <AddTodoModal onAdd={add} />
 
@@ -99,12 +105,27 @@ export default function App() {
 }
 
 function LoadingSkeleton() {
-  // Three faint pulsing circles where bubbles would appear.
+  // Three faint pulsing circles at fixed positions, matching the spec.
+  const skeletons = [
+    { size: 92, x: '52%', y: '28%', delay: '0s' },
+    { size: 64, x: '30%', y: '52%', delay: '0.3s' },
+    { size: 44, x: '70%', y: '62%', delay: '0.6s' },
+  ];
   return (
-    <div className="bubble-canvas skeleton-canvas" aria-busy="true">
-      <span className="skeleton-bubble" style={{ width: 90, height: 90, left: '30%', top: '55%' }} />
-      <span className="skeleton-bubble" style={{ width: 70, height: 70, left: '55%', top: '40%' }} />
-      <span className="skeleton-bubble" style={{ width: 50, height: 50, left: '70%', top: '65%' }} />
+    <div className="bubble-canvas" aria-busy="true">
+      {skeletons.map((s, i) => (
+        <div
+          key={i}
+          className="skeleton-bubble"
+          style={{
+            width: s.size,
+            height: s.size,
+            left: s.x,
+            top: s.y,
+            animationDelay: s.delay,
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -112,12 +133,12 @@ function LoadingSkeleton() {
 function EmptyState() {
   return (
     <div className="bubble-canvas empty-canvas">
-      <div className="empty-message">
-        <div className="empty-title">No floating todos.</div>
-        <div className="empty-sub">
-          Tap the <span className="empty-plus">+</span> button to send one up.
-        </div>
-        <div className="empty-arrow" aria-hidden="true">↘</div>
+      <div className="empty-inner">
+        <div className="empty-bubble" aria-hidden="true" />
+        <h2 className="empty-title">All clear up here.</h2>
+        <p className="empty-sub">
+          Send your first thought up with the <strong>New todo</strong> button below.
+        </p>
       </div>
     </div>
   );

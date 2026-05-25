@@ -294,16 +294,35 @@ body {
   margin: 0 var(--space-1);
 }
 
-/* Bubble canvas + bubbles --------------------------------------- */
+/* Canvas wrap + bubble layer ------------------------------------ */
+.canvas-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 var(--space-5) var(--space-4);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--bg-canvas);
+  isolation: isolate;
+  display: flex;
+}
+.canvas-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 50%, transparent 60%, rgba(34, 26, 46, 0.06) 100%);
+  z-index: 1;
+}
+[data-direction="nightswim"] .canvas-wrap::before {
+  background: radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
+}
+
 .bubble-canvas {
   flex: 1 1 auto;
   position: relative;
   overflow: hidden;
-  border-radius: 1rem;
-  background:
-    radial-gradient(ellipse at 50% 100%, #1e293b88 0%, transparent 60%),
-    linear-gradient(180deg, #0b1220 0%, #060a17 100%);
-  border: 1px solid #1e293b;
+  background: transparent;
 }
 
 /* OUTER wrapper: matter.js writes transform here. We don't transition it. */
@@ -745,75 +764,116 @@ textarea.text-input {
 footer { color: #64748b; font-size: 0.8rem; }
 footer .hint { color: #475569; }
 
-/* Reconnect banner ---------------------------------------------- */
+/* Reconnect banner (top-center inside canvas wrap) -------------- */
 .banner {
-  padding: 0.55rem 0.9rem;
-  border-radius: 0.5rem;
-  font-size: 0.85rem;
-  border: 1px solid;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: var(--space-3);
+  padding: 10px 16px 10px 14px;
+  background: var(--warning-soft);
+  border: 1px solid color-mix(in oklab, var(--warning) 60%, transparent);
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-1);
+  z-index: 6;
+  animation: banner-in 320ms var(--ease-spring);
 }
-.banner-warn {
-  background: #422006aa;
-  border-color: #92400e;
-  color: #fcd34d;
+@keyframes banner-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
+.banner-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--warning);
+  animation: sync-warn 0.9s ease-in-out infinite;
+}
+.banner-faint { color: var(--text-faint); margin-left: 6px; }
 
 /* Loading skeleton ---------------------------------------------- */
-.skeleton-canvas { position: relative; }
 .skeleton-bubble {
   position: absolute;
   border-radius: 50%;
-  background: #1e293b;
-  border: 2px solid #334155;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5) 0%, transparent 36%),
+    color-mix(in oklab, var(--text-faint) 20%, var(--surface));
+  opacity: 0.55;
   transform: translate(-50%, -50%);
-  animation: skeleton-pulse 1.4s ease-in-out infinite;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
 }
-.skeleton-bubble:nth-child(2) { animation-delay: 0.2s; }
-.skeleton-bubble:nth-child(3) { animation-delay: 0.4s; }
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
-  50%      { opacity: 0.7;  transform: translate(-50%, -50%) scale(1.05); }
+  0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(0.98); }
+  50%      { opacity: 0.65; transform: translate(-50%, -50%) scale(1.02); }
 }
 
 /* Empty state --------------------------------------------------- */
 .empty-canvas {
-  display: flex;
   align-items: center;
   justify-content: center;
 }
-.empty-message {
+.empty-inner {
   text-align: center;
-  color: #94a3b8;
-  user-select: none;
+  max-width: 380px;
+  padding: var(--space-6);
+  position: relative;
+  z-index: 2;
 }
-.empty-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #cbd5e1;
-  margin-bottom: 0.5rem;
-}
-.empty-sub { font-size: 0.95rem; }
-.empty-plus {
-  display: inline-block;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: white;
-  width: 1.4rem;
-  height: 1.4rem;
-  line-height: 1.4rem;
+.empty-bubble {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto var(--space-5);
   border-radius: 50%;
-  font-weight: 700;
-  vertical-align: middle;
-  margin: 0 0.15rem;
+  background:
+    radial-gradient(circle at 28% 28%, var(--bubble-highlight) 0%, transparent 34%),
+    radial-gradient(circle at 70% 78%,
+        color-mix(in oklab, var(--iri-b) 86%, #000 18%) 0%,
+        color-mix(in oklab, var(--iri-b) 80%, transparent) 55%,
+        transparent 78%),
+    linear-gradient(135deg, var(--iri-a) 0%, var(--iri-b) 50%, var(--iri-c) 100%);
+  box-shadow:
+    inset -10px -14px 28px rgba(0, 0, 0, 0.18),
+    inset 8px 10px 22px var(--bubble-rim-mix),
+    var(--shadow-bubble);
+  position: relative;
+  animation: empty-bob 5s ease-in-out infinite;
 }
-.empty-arrow {
+.empty-bubble::before {
+  content: "";
   position: absolute;
-  right: 5.5rem;
-  bottom: 5.5rem;
-  font-size: 2.5rem;
-  color: #6366f1aa;
-  animation: empty-bob 1.8s ease-in-out infinite;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 130deg, var(--iri-a), var(--iri-b), var(--iri-c), var(--iri-a));
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 78%, transparent 92%);
+          mask: radial-gradient(circle, transparent 62%, #000 78%, transparent 92%);
+  mix-blend-mode: screen;
+  opacity: 0.65;
+  animation: iri-spin 14s linear infinite;
+}
+@keyframes iri-spin {
+  to { transform: rotate(360deg); }
 }
 @keyframes empty-bob {
-  0%, 100% { transform: translate(0, 0);     opacity: 0.7; }
-  50%      { transform: translate(6px, 6px); opacity: 1; }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
 }
+.empty-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-2);
+  color: var(--text);
+}
+.empty-sub {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin: 0;
+}
+.empty-sub strong { color: var(--text); font-weight: 600; }
