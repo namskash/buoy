@@ -6,6 +6,8 @@ A React component is a JavaScript function that returns markup (JSX). When the d
 
 That's the whole game. Everything else is implementation detail.
 
+> **Jetpack Compose parallel:** if you've used Kotlin + Compose, this is the same model. A `@Composable` function describes UI; when state it reads changes, Compose **recomposes** — re-invokes the function and diffs the result against the UI tree. `remember { ... }` is Compose's answer to `useState`/`useRef`: a value that survives across recompositions instead of being recreated each time the function runs.
+
 ## JSX, briefly
 
 ```jsx

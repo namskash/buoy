@@ -105,6 +105,25 @@ A flat lookup table for the Rails developer who built Buoy. Every row maps a Rai
 
 The recurring shift: Rails gives you a **slot** and a **generator**. Node/React give you a **blank file** and the freedom (curse) to name it whatever you want. The trade-off Rails developers feel most is having to invent layout and naming conventions that Rails would have decided for them — but the payoff is that nothing is hidden behind ten generations of `method_missing` magic.
 
+## Aside: Jetpack Compose, for the Android-curious
+
+React and Jetpack Compose share an ancestry (both inspired by declarative UI ideas from Elm/SwiftUI/etc.), so the core mental model ports almost directly:
+
+| React / Buoy                      | Jetpack Compose                                             |
+| --------------------------------- | ----------------------------------------------------------- |
+| Component (function returning JSX)| `@Composable fun Foo(...)` (returns Unit, emits UI)         |
+| Re-render on state change         | **Recomposition** (Compose re-invokes the function)         |
+| `useState`                        | `remember { mutableStateOf(...) }`                          |
+| `useRef`                          | `remember { ... }` (un-observed box)                        |
+| `useEffect(fn, [deps])`           | `LaunchedEffect(deps) { ... }` / `DisposableEffect`         |
+| `useCallback` / `useMemo`         | `remember(key) { ... }`                                     |
+| Props                             | Function parameters                                         |
+| `<AnimatePresence>` + `exit`      | `AnimatedVisibility(visible) { ... }`                       |
+| `framer-motion` spring transition | `spring(stiffness, dampingRatio)` in `animate*AsState`      |
+| Custom hook (`useTodos`)          | Composable that returns state, or a `ViewModel` + `collectAsState` |
+
+The biggest delta is **where long-lived state lives**: React leans on custom hooks; Compose tends to push that into a `ViewModel` (survives configuration changes) exposed as `StateFlow`/`State`. But within a single screen, `remember { mutableStateOf(...) }` and `useState` are the same idea.
+
 ---
 
 That's the tour. Re-read [00-overview.md](00-overview.md) and you'll see the same map from the other direction: this time the Rails columns of the table should read like the right side of your brain saying "ahh, that one."

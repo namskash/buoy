@@ -137,6 +137,18 @@ Same as Rails: extract a complicated controller into a service object so the con
 
 If you're tempted to reach for one of the rarer hooks (`useMemo`, `useReducer`, `useImperativeHandle`, `useLayoutEffect`), you almost certainly don't need it yet. Start with the four above.
 
+> **Jetpack Compose parallel:** the same four primitives exist with different names.
+>
+> | React                  | Compose                                                 |
+> | ---------------------- | ------------------------------------------------------- |
+> | `useState`             | `remember { mutableStateOf(...) }` (or `by` delegate)   |
+> | `useEffect`            | `LaunchedEffect(key)` / `DisposableEffect(key)` (cleanup via `onDispose`) |
+> | `useRef`               | `remember { ... }` (a plain box, not observed)          |
+> | `useCallback`          | `remember(key) { { ... } }` for a stable lambda         |
+> | `useMemo`              | `remember(key) { compute() }`                           |
+>
+> The dependency-array idea shows up as the **keys** passed to `remember` / `LaunchedEffect`: change a key, the block re-runs (and the old effect's `onDispose` fires). Same mental model as `useEffect`'s `[dep1, dep2]`.
+
 ## What "controlled inputs" means
 
 ```jsx

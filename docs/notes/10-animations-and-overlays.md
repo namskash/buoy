@@ -172,6 +172,20 @@ A small thing, but the rotation gives a clear "open ↔ closed" affordance.
 
 There isn't really a server-side one. The closest thing in Rails is **Stimulus + Turbo Streams**: server emits a change, Stimulus controller animates the DOM in/out. Buoy does the same thing with React + framer-motion: WS broadcasts a change, framer animates the bubble entering or exiting.
 
+## Jetpack Compose parallel
+
+Compose ships an animation toolkit that maps almost 1:1 onto what we're doing:
+
+| framer-motion                           | Compose equivalent                                          |
+| --------------------------------------- | ----------------------------------------------------------- |
+| `animate={{ scale: 1 }}`                | `animateFloatAsState(targetValue = 1f)`                     |
+| `transition={{ type: 'spring', ... }}`  | `spring(stiffness = ..., dampingRatio = ...)`               |
+| `<AnimatePresence>` + `exit={...}`      | `AnimatedVisibility(visible) { ... }` (handles enter/exit)  |
+| Keyframes `[1, 1.3, 0]` with `times`    | `keyframes { 1f at 0; 1.3f at 175; 0f at 500 }`             |
+| `whileHover={{ scale: 1.08 }}`          | `Modifier.hoverable` + `animateFloatAsState` on a flag      |
+
+The "animate on the way out" trick is the same idea in both worlds: `AnimatedVisibility` keeps the composable alive until its exit animation finishes, exactly like `AnimatePresence` defers React's unmount.
+
 ## What changed in this milestone
 
 ```
