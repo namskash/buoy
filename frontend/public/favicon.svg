@@ -1,26 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <radialGradient id="big" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#fde68a"/>
-      <stop offset="60%" stop-color="#f59e0b"/>
-      <stop offset="100%" stop-color="#b45309"/>
+    <radialGradient id="coral" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffd5e8"/>
+      <stop offset="55%" stop-color="#ff8aae"/>
+      <stop offset="100%" stop-color="#ff5c8a"/>
     </radialGradient>
-    <radialGradient id="mid" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#a7f3d0"/>
-      <stop offset="60%" stop-color="#10b981"/>
-      <stop offset="100%" stop-color="#065f46"/>
+    <radialGradient id="iri" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fff6c9"/>
+      <stop offset="55%" stop-color="#c4e2ff"/>
+      <stop offset="100%" stop-color="#ffd5e8"/>
     </radialGradient>
-    <radialGradient id="small" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#bae6fd"/>
-      <stop offset="60%" stop-color="#0ea5e9"/>
-      <stop offset="100%" stop-color="#075985"/>
+    <radialGradient id="sky" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#e6f3ff"/>
+      <stop offset="55%" stop-color="#7cc7ff"/>
+      <stop offset="100%" stop-color="#2eb6ff"/>
     </radialGradient>
   </defs>
-  <rect width="64" height="64" rx="12" fill="#0b1220"/>
-  <circle cx="42" cy="22" r="16" fill="url(#big)"/>
-  <circle cx="18" cy="34" r="10" fill="url(#mid)"/>
-  <circle cx="34" cy="48" r="8"  fill="url(#small)"/>
-  <circle cx="38" cy="17" r="3.5" fill="#fff8" />
-  <circle cx="15" cy="31" r="2.2" fill="#fff8" />
-  <circle cx="32" cy="46" r="1.8" fill="#fff8" />
+  <rect width="64" height="64" rx="14" fill="#f3f5f8"/>
+  <circle cx="40" cy="24" r="17" fill="url(#coral)"/>
+  <circle cx="18" cy="38" r="10" fill="url(#iri)"/>
+  <circle cx="36" cy="50" r="7"  fill="url(#sky)"/>
+  <circle cx="36" cy="19" r="4" fill="#ffffffcc" />
+  <circle cx="15" cy="35" r="2.4" fill="#ffffffcc" />
+  <circle cx="34" cy="48" r="1.8" fill="#ffffffcc" />
 </svg>
