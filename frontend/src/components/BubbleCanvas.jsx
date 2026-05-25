@@ -25,13 +25,6 @@ const WALL_THICKNESS = 80;
 const LONG_PRESS_MS = 500;
 const CLICK_TOLERANCE = 6;
 
-function colourFor(t) {
-  const palette = {
-    5: '#ef4444', 4: '#f97316', 3: '#eab308', 2: '#38bdf8', 1: '#64748b',
-  };
-  return palette[t.priority] || palette[3];
-}
-
 export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails }) {
   const containerRef = useRef(null);
   const engineRef = useRef(null);
@@ -241,10 +234,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
             >
               <motion.div
                 className="bubble"
-                style={{
-                  background: `radial-gradient(circle at 30% 30%, #fff5 0%, ${colourFor(t)} 60%)`,
-                  borderColor: colourFor(t),
-                }}
+                data-priority={t.priority}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: [1, 1.3, 0], opacity: [1, 1, 0], transition: { duration: 0.5, times: [0, 0.35, 1] } }}
