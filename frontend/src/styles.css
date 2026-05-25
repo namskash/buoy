@@ -293,6 +293,31 @@ body {
   transform: translateY(-4px);
   margin: 0 var(--space-1);
 }
+.direction-toggle {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+.direction-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.direction-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
 
 /* Canvas wrap + bubble layer ------------------------------------ */
 .canvas-wrap {

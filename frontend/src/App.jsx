@@ -1,13 +1,30 @@
 // App shell. The bubble canvas only sees ACTIVE todos — completed ones
 // pop and disappear; they live on as `- [x]` in todos.md for history.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTodos } from './useTodos.js';
 import BubbleCanvas from './components/BubbleCanvas.jsx';
 import AddTodoModal from './components/AddTodoModal.jsx';
 import DetailOverlay from './components/DetailOverlay.jsx';
 
+const DIRECTION_KEY = 'buoy:direction';
+
+function useDirection() {
+  const [direction, setDirection] = useState(() => {
+    if (typeof window === 'undefined') return 'daydream';
+    return window.localStorage.getItem(DIRECTION_KEY) || 'daydream';
+  });
+  useEffect(() => {
+    document.documentElement.setAttribute('data-direction', direction);
+    window.localStorage.setItem(DIRECTION_KEY, direction);
+  }, [direction]);
+  return [direction, setDirection];
+}
+
 export default function App() {
+  const [direction, setDirection] = useDirection();
+  const toggleDirection = () =>
+    setDirection((d) => (d === 'daydream' ? 'nightswim' : 'daydream'));
   const {
     todos,
     loading,
@@ -57,6 +74,26 @@ export default function App() {
               </>
             )}
           </span>
+          <button
+            type="button"
+            className="direction-toggle"
+            onClick={toggleDirection}
+            aria-label={`Switch to ${direction === 'daydream' ? 'nightswim' : 'daydream'}`}
+            title={`Switch to ${direction === 'daydream' ? 'Nightswim' : 'Daydream'}`}
+          >
+            {direction === 'daydream' ? (
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="currentColor" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" fill="currentColor" />
+                <g stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4" />
+                </g>
+              </svg>
+            )}
+          </button>
         </div>
       </header>
 
