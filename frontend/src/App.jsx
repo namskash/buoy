@@ -33,20 +33,31 @@ export default function App() {
   // Only nag about the WS once it has failed a few times in a row, so a
   // single dev-server restart doesn't flash a scary banner.
   const showReconnectBanner = !connected && reconnectAttempts >= 3;
+  const syncState = connected ? 'live' : reconnectAttempts >= 3 ? 'offline' : 'reconnecting';
+  const syncLabel = { live: 'Live', reconnecting: 'Reconnecting…', offline: 'Offline' }[syncState];
 
   return (
     <div className="app">
-      <header>
-        <h1>Buoy</h1>
-        <span
-          className={`ws-dot ${connected ? 'on' : 'off'}`}
-          title={connected ? 'live' : 'reconnecting'}
-        />
-        {error && <span className="status error">· {error.message}</span>}
-        <span className="counts">
-          <strong>{activeTodos.length}</strong> active
-          {doneCount > 0 && <> · <span className="dim">{doneCount} done</span></>}
-        </span>
+      <header className="app-header">
+        <div className="wordmark" aria-label="Buoy">
+          Bu<span className="wm-dot" aria-hidden="true" />y
+        </div>
+        <div className="sync-strip">
+          {error && <span className="status error">{error.message}</span>}
+          <span className="sync" data-state={syncState}>
+            <span className="sync-dot" />
+            {syncLabel}
+          </span>
+          <span className="counts">
+            <strong>{activeTodos.length}</strong> <em>active</em>
+            {doneCount > 0 && (
+              <>
+                <span className="sep" aria-hidden="true" />
+                <strong>{doneCount}</strong> <em>done</em>
+              </>
+            )}
+          </span>
+        </div>
       </header>
 
       {showReconnectBanner && (
