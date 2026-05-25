@@ -268,3 +268,76 @@ h1 {
 
 footer { color: #64748b; font-size: 0.8rem; }
 footer .hint { color: #475569; }
+
+/* Reconnect banner ---------------------------------------------- */
+.banner {
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  border: 1px solid;
+}
+.banner-warn {
+  background: #422006aa;
+  border-color: #92400e;
+  color: #fcd34d;
+}
+
+/* Loading skeleton ---------------------------------------------- */
+.skeleton-canvas { position: relative; }
+.skeleton-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2px solid #334155;
+  transform: translate(-50%, -50%);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton-bubble:nth-child(2) { animation-delay: 0.2s; }
+.skeleton-bubble:nth-child(3) { animation-delay: 0.4s; }
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.7;  transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Empty state --------------------------------------------------- */
+.empty-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.empty-message {
+  text-align: center;
+  color: #94a3b8;
+  user-select: none;
+}
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+.empty-sub { font-size: 0.95rem; }
+.empty-plus {
+  display: inline-block;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  width: 1.4rem;
+  height: 1.4rem;
+  line-height: 1.4rem;
+  border-radius: 50%;
+  font-weight: 700;
+  vertical-align: middle;
+  margin: 0 0.15rem;
+}
+.empty-arrow {
+  position: absolute;
+  right: 5.5rem;
+  bottom: 5.5rem;
+  font-size: 2.5rem;
+  color: #6366f1aa;
+  animation: empty-bob 1.8s ease-in-out infinite;
+}
+@keyframes empty-bob {
+  0%, 100% { transform: translate(0, 0);     opacity: 0.7; }
+  50%      { transform: translate(6px, 6px); opacity: 1; }
+}

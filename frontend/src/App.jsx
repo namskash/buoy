@@ -8,7 +8,16 @@ import AddTodoModal from './components/AddTodoModal.jsx';
 import DetailOverlay from './components/DetailOverlay.jsx';
 
 export default function App() {
-  const { todos, loading, error, connected, add, toggle, remove } = useTodos();
+  const {
+    todos,
+    loading,
+    error,
+    connected,
+    reconnectAttempts,
+    add,
+    toggle,
+    remove,
+  } = useTodos();
   const [detailId, setDetailId] = useState(null);
 
   // Canvas shows active todos only. Counts shown separately for context.
@@ -21,11 +30,18 @@ export default function App() {
     [detailId, todos],
   );
 
+  // Only nag about the WS once it has failed a few times in a row, so a
+  // single dev-server restart doesn't flash a scary banner.
+  const showReconnectBanner = !connected && reconnectAttempts >= 3;
+
   return (
     <div className="app">
       <header>
         <h1>Buoy</h1>
-        <span className={`ws-dot ${connected ? 'on' : 'off'}`} title={connected ? 'live' : 'reconnecting'} />
+        <span
+          className={`ws-dot ${connected ? 'on' : 'off'}`}
+          title={connected ? 'live' : 'reconnecting'}
+        />
         {error && <span className="status error">· {error.message}</span>}
         <span className="counts">
           <strong>{activeTodos.length}</strong> active
@@ -33,8 +49,16 @@ export default function App() {
         </span>
       </header>
 
+      {showReconnectBanner && (
+        <div className="banner banner-warn" role="status">
+          Can't reach the server. Retrying… (attempt {reconnectAttempts})
+        </div>
+      )}
+
       {loading ? (
-        <p className="status">Loading…</p>
+        <LoadingSkeleton />
+      ) : activeTodos.length === 0 ? (
+        <EmptyState />
       ) : (
         <BubbleCanvas
           todos={activeTodos}
@@ -59,6 +83,31 @@ export default function App() {
           <span className="hint"> · click: done · right-click / hold: details · dbl-click: delete · drag: throw</span>
         </small>
       </footer>
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  // Three faint pulsing circles where bubbles would appear.
+  return (
+    <div className="bubble-canvas skeleton-canvas" aria-busy="true">
+      <span className="skeleton-bubble" style={{ width: 90, height: 90, left: '30%', top: '55%' }} />
+      <span className="skeleton-bubble" style={{ width: 70, height: 70, left: '55%', top: '40%' }} />
+      <span className="skeleton-bubble" style={{ width: 50, height: 50, left: '70%', top: '65%' }} />
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="bubble-canvas empty-canvas">
+      <div className="empty-message">
+        <div className="empty-title">No floating todos.</div>
+        <div className="empty-sub">
+          Tap the <span className="empty-plus">+</span> button to send one up.
+        </div>
+        <div className="empty-arrow" aria-hidden="true">↘</div>
+      </div>
     </div>
   );
 }

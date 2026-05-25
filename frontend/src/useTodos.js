@@ -23,6 +23,7 @@ export function useTodos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
 
@@ -56,6 +57,7 @@ export function useTodos() {
       ws.addEventListener('open', () => {
         attempt = 0;
         setConnected(true);
+        setReconnectAttempts(0);
       });
 
       ws.addEventListener('message', (evt) => {
@@ -71,6 +73,7 @@ export function useTodos() {
         setConnected(false);
         if (cancelled) return;
         attempt += 1;
+        setReconnectAttempts(attempt);
         const delay = Math.min(1000 * 2 ** attempt, 10000); // 2s, 4s, 8s, 10s cap
         reconnectTimerRef.current = setTimeout(connect, delay);
       });
@@ -104,5 +107,15 @@ export function useTodos() {
     [],
   );
 
-  return { todos, loading, error, connected, add, toggle, remove, refresh };
+  return {
+    todos,
+    loading,
+    error,
+    connected,
+    reconnectAttempts,
+    add,
+    toggle,
+    remove,
+    refresh,
+  };
 }
