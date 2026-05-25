@@ -1,6 +1,6 @@
 # 🫧 Buoy
 
-A floating-bubble to-do app, built as a guided tour of React + Node for a Rails developer.
+A floating-bubble to-do app.
 
 Each task is a bubble. Bigger bubbles (higher priority) rise to the top of the canvas, bob around, and gently attract each other. Click to complete (the bubble *pops*), right-click or long-press to see details, drag to throw it across the screen. The "database" is a single human-editable `data/todos.md` file — edit it on your host in any text editor and the running app picks up the change over WebSocket within ~100ms.
 
@@ -81,7 +81,7 @@ buoy/
 │       ├── App.jsx
 │       ├── api.js · useTodos.js
 │       └── components/   # BubbleCanvas, AddTodoModal, DetailOverlay
-└── docs/notes/           # numbered learning notes (00–09)
+└── docs/                 # architecture + design notes
 ```
 
 ## Interactions
@@ -101,19 +101,3 @@ cd backend && npm test         # 27 vitest tests (parser, store, routes, ws)
 ```
 
 There are no frontend unit tests — the React side is verified by clicking through the running app.
-
-## Learning notes
-
-The reason this repo exists: to be a guided tour for a Rails developer learning React + Node. Numbered notes in [`docs/notes/`](docs/notes/) walk through the stack in roughly the order it was built.
-
-1. [00 — Overview](docs/notes/00-overview.md)
-2. [01 — Node and Express](docs/notes/01-node-and-express.md)
-3. [02 — The `.md` file as DB](docs/notes/02-the-md-file-as-db.md)
-4. [03 — React basics](docs/notes/03-react-basics.md)
-5. [04 — Hooks and state](docs/notes/04-hooks-and-state.md)
-6. [05 — Vite and the dev server](docs/notes/05-vite-and-the-dev-server.md)
-7. [06 — WebSockets and live sync](docs/notes/06-websockets-and-live-sync.md)
-8. [07 — matter.js physics](docs/notes/07-matter-js-physics.md)
-9. [08 — Docker and compose (dev + prod)](docs/notes/08-docker-and-compose.md)
-10. [10 — Animations and overlays](docs/notes/10-animations-and-overlays.md)
-11. [09 — Rails ⇆ React/Node cheat-sheet](docs/notes/09-rails-analogies.md)
