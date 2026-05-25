@@ -1,3 +1,173 @@
+/* ============================================================================
+ * Buoy — Design Tokens
+ * Two directions, switched by `data-direction` on <html>:
+ *   data-direction="daydream"   → light, airy
+ *   data-direction="nightswim"  → deep teal, dark
+ * ========================================================================== */
+
+:root,
+[data-direction="daydream"] {
+  /* Surfaces */
+  --bg-base:    #f3f5f8;
+  --bg-canvas:  radial-gradient(120% 80% at 50% 100%, #f0e3f7 0%, #e6eefc 55%, #f1f3fb 100%);
+  --bg-canvas-solid: #ecefff;
+  --surface:        #ffffff;
+  --surface-tint:   #f7f8fb;
+  --surface-sunken: #eef0f4;
+
+  /* Lines */
+  --border:        rgba(40, 30, 50, 0.08);
+  --border-strong: rgba(40, 30, 50, 0.18);
+  --border-focus:  #ff5c8a;
+
+  /* Text */
+  --text:           #221a2e;
+  --text-dim:       #6b6378;
+  --text-faint:     #a39ba8;
+  --text-on-primary:#ffffff;
+  --text-on-canvas: #221a2e;
+
+  /* Semantic */
+  --primary:        #ff5c8a;
+  --primary-hover:  #f74577;
+  --primary-press:  #d83567;
+  --primary-soft:   rgba(255, 92, 138, 0.14);
+  --danger:         #e8344c;
+  --danger-soft:    rgba(232, 52, 76, 0.10);
+  --success:        #1aa37e;
+  --success-soft:   rgba(26, 163, 126, 0.12);
+  --warning:        #f0a93b;
+  --warning-soft:   rgba(240, 169, 59, 0.14);
+  --info:           #3a86ff;
+
+  /* Priority */
+  --prio-1: #93a4c8;
+  --prio-2: #2eb6ff;
+  --prio-3: #ffcc1f;
+  --prio-4: #ff8a55;
+  --prio-5: #f05a3a;
+
+  /* Iridescent rim pair */
+  --iri-a: #ffd5e8;
+  --iri-b: #c4e2ff;
+  --iri-c: #fff6c9;
+
+  /* Bubble shading */
+  --bubble-highlight: rgba(255, 255, 255, 0.55);
+  --bubble-rim-mix:   rgba(255, 255, 255, 0.38);
+  --bubble-contact:   rgba(34, 26, 46, 0.22);
+
+  /* Type */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", "JetBrains Mono", monospace;
+
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;
+  --fs-lg: 20px;
+  --fs-xl: 28px;
+  --fs-display: 40px;
+
+  --lh-tight: 1.15;
+  --lh-snug:  1.32;
+  --lh-body:  1.5;
+
+  /* Spacing — 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radius */
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   32px;
+  --radius-pill: 9999px;
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgba(34, 26, 46, 0.05),
+              0 2px 6px rgba(34, 26, 46, 0.06);
+  --shadow-2: 0 4px 10px rgba(34, 26, 46, 0.06),
+              0 12px 30px rgba(34, 26, 46, 0.10);
+  --shadow-3: 0 12px 28px rgba(34, 26, 46, 0.12),
+              0 32px 80px rgba(34, 26, 46, 0.18);
+  --shadow-focus: 0 0 0 4px rgba(255, 92, 138, 0.28);
+  --shadow-bubble:
+      0 6px 14px rgba(34, 26, 46, 0.10),
+      0 2px 4px  rgba(34, 26, 46, 0.06);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.32, 0.72, 0.21, 1);
+  --ease-spring:   cubic-bezier(0.22, 1.4, 0.36, 1);
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-mid:  260ms;
+  --duration-slow: 420ms;
+}
+
+[data-direction="nightswim"] {
+  --bg-base:    #001824;
+  --bg-canvas:  radial-gradient(140% 100% at 50% 110%, #023a59 0%, #012133 40%, #00101a 100%);
+  --bg-canvas-solid: #012133;
+  --surface:        #052f44;
+  --surface-tint:   #073a55;
+  --surface-sunken: #021823;
+
+  --border:        rgba(160, 180, 255, 0.10);
+  --border-strong: rgba(160, 180, 255, 0.22);
+  --border-focus:  #6be4c1;
+
+  --text:           #f0ecff;
+  --text-dim:       #9d96c4;
+  --text-faint:     #5e587e;
+  --text-on-primary:#06251c;
+  --text-on-canvas: #f0ecff;
+
+  --primary:        #6be4c1;
+  --primary-hover:  #5cdcb4;
+  --primary-press:  #46c8a0;
+  --primary-soft:   rgba(107, 228, 193, 0.18);
+  --danger:         #ff6b80;
+  --danger-soft:    rgba(255, 107, 128, 0.16);
+  --success:        #5be4a8;
+  --success-soft:   rgba(91, 228, 168, 0.16);
+  --warning:        #f7c062;
+  --warning-soft:   rgba(247, 192, 98, 0.14);
+  --info:           #79a8ff;
+
+  --prio-1: #8b95d6;
+  --prio-2: #3fc1ff;
+  --prio-3: #ffd54a;
+  --prio-4: #ff9670;
+  --prio-5: #ff6a4d;
+
+  --iri-a: #6ad0ff;
+  --iri-b: #ff9bd6;
+  --iri-c: #fff1a8;
+
+  --bubble-highlight: rgba(255, 255, 255, 0.45);
+  --bubble-rim-mix:   rgba(255, 255, 255, 0.30);
+  --bubble-contact:   rgba(0, 0, 0, 0.60);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4),
+              0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.45),
+              0 16px 40px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.55),
+              0 40px 90px rgba(0, 0, 0, 0.65);
+  --shadow-focus: 0 0 0 4px rgba(107, 228, 193, 0.32);
+  --shadow-bubble:
+      0 10px 28px rgba(0, 0, 0, 0.40),
+      0 2px 6px   rgba(0, 0, 0, 0.45),
+      0 0 32px    rgba(107, 228, 193, 0.05);
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root {
@@ -6,10 +176,22 @@ html, body, #root {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: radial-gradient(ellipse at top, #1e293b 0%, #020617 100%);
-  color: #e2e8f0;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+  background: var(--bg-base);
+  color: var(--text);
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .app {
