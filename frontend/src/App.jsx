@@ -85,8 +85,6 @@ export default function App() {
         )}
       </div>
 
-      <AddTodoModal onAdd={add} />
-
       <DetailOverlay
         todo={detailTodo}
         onClose={() => setDetailId(null)}
@@ -94,11 +92,17 @@ export default function App() {
         onRemove={remove}
       />
 
-      <footer>
-        <small>
-          {connected ? 'live sync on' : 'offline'}
-          <span className="hint"> · click: done · right-click / hold: details · dbl-click: delete · drag: throw</span>
-        </small>
+      <footer className="app-footer">
+        <span className="hint">
+          <kbd>click</kbd> done
+          <span className="hint-sep">·</span>
+          <kbd>hold</kbd> details
+          <span className="hint-sep">·</span>
+          <kbd>dbl</kbd> delete
+          <span className="hint-sep">·</span>
+          <kbd>drag</kbd> throw
+        </span>
+        <AddTodoModal onAdd={add} />
       </footer>
     </div>
   );

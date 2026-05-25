@@ -410,12 +410,37 @@ body {
   pointer-events: none;
 }
 
-/* Floating + button (pill, bottom-center) ------------------------ */
+/* Footer + FAB pill --------------------------------------------- */
+.app-footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4) var(--space-6) var(--space-5);
+  gap: var(--space-5);
+}
+.hint {
+  position: absolute;
+  left: var(--space-6);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.hint kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.hint-sep { opacity: 0.5; }
+
 .fab {
-  position: fixed;
-  left: 50%;
-  bottom: var(--space-5);
-  transform: translateX(-50%);
   appearance: none;
   border: none;
   cursor: pointer;
@@ -429,7 +454,6 @@ body {
   color: var(--text-on-primary);
   background: var(--primary);
   border-radius: var(--radius-pill);
-  z-index: 50;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     inset 0 -2px 0 rgba(0, 0, 0, 0.12),
@@ -440,7 +464,7 @@ body {
 }
 .fab:hover {
   background: var(--primary-hover);
-  transform: translateX(-50%) translateY(-1px);
+  transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     inset 0 -2px 0 rgba(0, 0, 0, 0.12),
@@ -448,7 +472,7 @@ body {
 }
 .fab:active {
   background: var(--primary-press);
-  transform: translateX(-50%);
+  transform: translateY(0);
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.18),
     var(--shadow-1);
@@ -877,3 +901,15 @@ footer .hint { color: #475569; }
   margin: 0;
 }
 .empty-sub strong { color: var(--text); font-weight: 600; }
+
+/* Status / misc ------------------------------------------------- */
+.status.error { color: var(--danger); font-size: var(--fs-sm); font-weight: 500; }
+
+/* Responsive ---------------------------------------------------- */
+@media (max-width: 720px) {
+  .canvas-wrap { margin: 0 var(--space-3) var(--space-3); border-radius: var(--radius-lg); }
+  .app-header { padding: var(--space-4) var(--space-4) var(--space-3); }
+  .app-footer { padding: var(--space-3) var(--space-4) var(--space-4); }
+  .hint { display: none; }
+  .modal { padding: var(--space-5); border-radius: var(--radius-lg); }
+}
