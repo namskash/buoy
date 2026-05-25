@@ -35,12 +35,18 @@ export default function AddTodoModal({ onAdd }) {
   return (
     <>
       <button
-        className={`fab ${open ? 'fab-open' : ''}`}
+        className="fab"
+        data-open={open}
         onClick={() => setOpen((v) => !v)}
-        title="Add a todo"
-        aria-label="Add a todo"
+        aria-label={open ? 'Close add todo' : 'Add a todo'}
+        aria-expanded={open}
       >
-        <span className="fab-plus">+</span>
+        <span className="fab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+          </svg>
+        </span>
+        <span>{open ? 'Close' : 'New todo'}</span>
       </button>
 
       <AnimatePresence>
