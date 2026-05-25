@@ -60,52 +60,78 @@ export default function AddTodoModal({ onAdd }) {
           >
             <motion.form
               className="modal add-modal"
-              initial={{ scale: 0.92, opacity: 0, y: 12 }}
+              initial={{ scale: 0.96, opacity: 0, y: 14 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 8 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
               onClick={(e) => e.stopPropagation()}
               onSubmit={submit}
             >
-              <h2>New todo</h2>
-              <label>
-                Title
+              <div>
+                <h2 className="modal-title">New todo</h2>
+                <p className="modal-sub">Bubbles rise on their own — bigger and brighter the more urgent.</p>
+              </div>
+
+              <div className="field">
+                <label className="field-label" htmlFor="todo-title">Title</label>
                 <input
                   ref={titleRef}
+                  id="todo-title"
+                  className="text-input"
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="What needs doing?"
+                  placeholder="e.g. Ship the PR"
+                  maxLength={120}
                 />
-              </label>
+              </div>
 
-              <label>
-                Priority
+              <div className="field">
+                <label className="field-label">Priority</label>
                 <div className="priority-row">
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    value={priority}
-                    onChange={(e) => setPriority(Number(e.target.value))}
-                  />
-                  <span className={`priority-value prio-${priority}`}>P{priority}</span>
+                  <div className="priority-track">
+                    <div className="priority-bg" aria-hidden="true" />
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      step="1"
+                      value={priority}
+                      onChange={(e) => setPriority(Number(e.target.value))}
+                      aria-label="Priority 1 to 5"
+                    />
+                  </div>
+                  <span
+                    className="priority-chip"
+                    style={{ '--bubble-color': `var(--prio-${priority})` }}
+                  >
+                    P{priority}
+                  </span>
                 </div>
-              </label>
+              </div>
 
-              <label>
-                Description <span className="dim">(optional)</span>
+              <div className="field">
+                <label className="field-label" htmlFor="todo-desc">
+                  Description <span className="field-optional">· optional</span>
+                </label>
                 <textarea
+                  id="todo-desc"
+                  className="text-input"
                   rows="2"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="More context, links, etc."
+                  placeholder="Anything to remember about this one…"
                 />
-              </label>
+              </div>
 
               <div className="modal-actions">
-                <button type="button" className="ghost" onClick={() => setOpen(false)}>Cancel</button>
-                <button type="submit">Add</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={!title.trim()}>
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+                  </svg>
+                  Send it up
+                </button>
               </div>
             </motion.form>
           </motion.div>
