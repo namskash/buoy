@@ -32,49 +32,63 @@ export default function DetailOverlay({ todo, onClose, onToggle, onRemove }) {
         >
           <motion.div
             className="modal detail-modal"
-            initial={{ scale: 0.92, opacity: 0, y: 12 }}
+            role="dialog"
+            aria-labelledby="detail-title"
+            initial={{ scale: 0.96, opacity: 0, y: 14 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 8 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 22 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <header className="detail-header">
-              <span className={`priority-value prio-${todo.priority}`}>P{todo.priority}</span>
-              <h2>{todo.title}</h2>
-            </header>
+            <div className="detail-head">
+              <span
+                className="detail-chip"
+                style={{ '--bubble-color': `var(--prio-${todo.priority})` }}
+                aria-label={`Priority ${todo.priority}`}
+              >
+                P{todo.priority}
+              </span>
+              <h2 className="detail-title" id="detail-title">{todo.title}</h2>
+            </div>
 
-            {todo.description ? (
-              <p className="detail-desc">{todo.description}</p>
-            ) : (
-              <p className="detail-desc dim"><em>No description</em></p>
+            {todo.description && (
+              <p className="detail-body">{todo.description}</p>
             )}
 
+            <hr className="divider" />
+
             <dl className="detail-meta">
-              <dt>Status</dt>
-              <dd>{todo.done ? '✓ Done' : '○ Active'}</dd>
-              <dt>Created</dt>
+              <dt>status</dt>
+              <dd>{todo.done ? 'done' : 'active'}</dd>
+              <dt>created</dt>
               <dd>{formatDate(todo.created)}</dd>
               {todo.completed && (<>
-                <dt>Completed</dt>
+                <dt>completed</dt>
                 <dd>{formatDate(todo.completed)}</dd>
               </>)}
+              <dt>priority</dt>
+              <dd>
+                P{todo.priority}
+                <span className="meta-faint"> · {['—','calm','steady','warm','hot','urgent'][todo.priority]}</span>
+              </dd>
               <dt>id</dt>
-              <dd><code>{todo.id}</code></dd>
+              <dd className="id-mono">{todo.id.slice(0, 8)}</dd>
             </dl>
 
-            <div className="modal-actions">
+            <div className="modal-actions detail-actions">
               <button
                 type="button"
-                className="danger"
+                className="btn btn-danger"
                 onClick={() => { onRemove(todo.id); onClose(); }}
               >
                 Delete
               </button>
               <button
                 type="button"
+                className="btn btn-primary"
                 onClick={() => { onToggle(todo); onClose(); }}
               >
-                {todo.done ? 'Mark active' : 'Mark done'}
+                {todo.done ? 'Send it up again' : 'Mark done'}
               </button>
             </div>
           </motion.div>

@@ -671,32 +671,72 @@ textarea.text-input {
 .btn-danger:active { background: var(--danger); color: white; }
 
 /* Detail overlay specifics --------------------------------------- */
-.detail-header {
+.detail-head {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: var(--space-4);
 }
-.detail-header h2 { margin: 0; flex: 1; }
-.detail-desc {
-  margin: 0 0 1rem;
-  color: #cbd5e1;
-  line-height: 1.5;
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bubble-color, var(--prio-3));
+  color: rgba(15, 8, 30, 0.86);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow:
+    inset -3px -4px 8px rgba(0, 0, 0, 0.18),
+    inset 2px 3px 6px rgba(255, 255, 255, 0.55),
+    var(--shadow-1);
+}
+.detail-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: var(--lh-snug);
+  color: var(--text);
+}
+.detail-body {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  margin: 0;
+}
+.divider {
+  height: 1px;
+  background: var(--border);
+  border: 0;
+  margin: 0;
 }
 .detail-meta {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 0.75rem;
+  grid-template-columns: 84px 1fr;
+  gap: var(--space-2) var(--space-4);
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
 }
-.detail-meta dt { color: #64748b; }
-.detail-meta dd { margin: 0; color: #cbd5e1; }
-.detail-meta code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.78rem;
-  color: #94a3b8;
+.detail-meta dt {
+  color: var(--text-faint);
+  font-weight: 500;
 }
+.detail-meta dd {
+  margin: 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.detail-meta dd.id-mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.meta-faint { color: var(--text-faint); }
+.detail-actions { justify-content: space-between; }
 
 /* Misc */
 .status { color: #94a3b8; margin: 0; }
