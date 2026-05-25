@@ -174,4 +174,161 @@ docker compose up --build
 
 Compose's `services:` is `Procfile`. Bind-mounting source so saves auto-reload is the equivalent of `rails server` running directly against your working tree. The anonymous `node_modules` volume is the awkward bit Rails users don't have to think about because Rails apps don't have a per-platform binary `node_modules`-style directory — bundler's gems are platform-tagged, but they go in a system-wide location, not the project tree.
 
-The win versus the previous "two terminals" setup: one command, reproducible environment, identical Node version on every machine, ready to grow into a production image (next milestone).
+The win versus the previous "two terminals" setup: one command, reproducible environment, identical Node version on every machine, ready to grow into a production image (next section).
+
+---
+
+# Part 2 — The production image
+
+Dev compose runs two containers on two ports with bind-mounted source. That's great for editing but terrible for shipping: two processes, two open ports, host directories baked into the topology. Production wants the opposite — **one immutable image**, **one port**, **no host filesystem assumptions**.
+
+The trick: **Express serves the built React bundle itself**, so the API, the WebSocket, and the static HTML/CSS/JS all come out of the same Node process on the same port. The frontend isn't a server in prod — it's just a folder of files.
+
+## Multi-stage build
+
+A multi-stage `Dockerfile` runs through several `FROM` statements; only the **last** stage becomes the final image. Earlier stages are throwaway scratch space — perfect for compiling assets you don't want to ship.
+
+```
+┌──── Stage 1: frontend-build ──────────────┐
+│ FROM node:20-alpine                       │
+│  npm ci  (full deps, incl. vite, react)   │
+│  npm run build  →  /build/dist/           │
+└────────────────┬──────────────────────────┘
+                 │ COPY --from=frontend-build
+                 ▼
+┌──── Stage 2: runtime (← final image) ─────┐
+│ FROM node:20-alpine                       │
+│  npm ci --omit=dev  (express, ws, etc.)   │
+│  COPY backend/src  →  /app/src/           │
+│  COPY ... /build/dist → /app/public/      │
+│  CMD node src/server.js                   │
+└───────────────────────────────────────────┘
+```
+
+The shipped image has **no Vite, no React source, no devDependencies, no test files** — just Node + the runtime deps + compiled assets. Smaller image, smaller attack surface, faster startup.
+
+## Same-origin URLs
+
+In dev the frontend's bundle is built with:
+
+```
+VITE_API_URL=http://localhost:3004
+VITE_WS_URL=ws://localhost:3004/ws
+```
+
+— because the React app at `:5173` calls a separate API server at `:3004`. Different origins, CORS required.
+
+In prod the bundle is built with **empty strings**:
+
+```dockerfile
+ENV VITE_API_URL=""
+ENV VITE_WS_URL=""
+```
+
+And the client code falls back to relative paths:
+
+```js
+// api.js
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3004';
+// "" + "/api/todos"  →  "/api/todos"  (relative, same-origin)
+
+// useTodos.js
+function resolveWsUrl() {
+  const fromEnv = import.meta.env.VITE_WS_URL;
+  if (fromEnv) return fromEnv;
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${window.location.host}/ws`;
+}
+```
+
+Why this matters: the same bundle works behind any reverse proxy, on any port, over http or https. No rebuild needed per environment. The browser asks the *current page's origin* for `/api/todos` and `/ws`, and Express — running on that origin — answers both.
+
+## Serving static files from Express
+
+```js
+// backend/src/app.js
+if (staticDir) {
+  app.use(express.static(staticDir));
+  app.get(/^\/(?!api\/|ws$).*/, (_req, res) => {
+    res.sendFile(join(staticDir, 'index.html'));
+  });
+}
+```
+
+Two pieces:
+
+1. **`express.static`** — for every GET, if a file with that path exists under `staticDir`, send it. Handles MIME types, ETags, 304s for free.
+2. **SPA fallback** — for any non-`/api/` and non-`/ws` route that *isn't* a static file, return `index.html`. This is what makes client-side routes like `/settings` work on a deep-link refresh: the server gives back the React shell and the React router takes over in the browser.
+
+Order matters: `express.static` and the SPA fallback are registered AFTER the API routes, so `/api/todos` still wins.
+
+The `staticDir` is wired by `server.js`:
+
+```js
+const staticDir = process.env.STATIC_DIR || null;
+const app = createApp({ store, staticDir });
+```
+
+In dev `STATIC_DIR` is unset → no static serving → Express stays a pure API. In prod the Dockerfile sets `STATIC_DIR=/app/public` → Express serves the bundle.
+
+## The whole production Dockerfile
+
+```dockerfile
+# Stage 1 — build the frontend bundle
+FROM node:20-alpine AS frontend-build
+WORKDIR /build
+ENV VITE_API_URL=""
+ENV VITE_WS_URL=""
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2 — runtime
+FROM node:20-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3004
+ENV STATIC_DIR=/app/public
+ENV TODOS_FILE=/app/data/todos.md
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
+COPY backend/src ./src
+COPY --from=frontend-build /build/dist ./public
+EXPOSE 3004
+CMD ["node", "src/server.js"]
+```
+
+`.dockerignore` at the repo root keeps build contexts clean — `node_modules`, `dist`, `.git`, docs, the dev compose file all stay out.
+
+## Building and running
+
+```bash
+# Build the image (a few seconds after the first cold pull)
+docker build -t buoy:prod .
+
+# Run it. Mount data/ so todos.md persists across container restarts.
+docker run --rm -p 3004:3004 -v "$PWD/data:/app/data" buoy:prod
+
+# Visit http://localhost:3004 — the React app loads from Express,
+# /api/todos and /ws both answer on the same port.
+```
+
+## Dev vs prod, side by side
+
+| Aspect            | Dev compose                              | Prod image                              |
+|-------------------|------------------------------------------|-----------------------------------------|
+| Containers        | 2 (backend + frontend)                   | 1                                       |
+| Open ports        | 3004 (API) + 5173 (Vite)                 | 3004 (everything)                       |
+| Frontend serving  | Vite dev server (HMR)                    | Express `static` from `/app/public/`    |
+| API URL in bundle | `http://localhost:3004` (env-baked)      | empty → relative `/api/...`             |
+| Source mount      | bind-mounted, hot reload                 | none — source is baked into the image   |
+| `node_modules`    | container's, shadowed by anon volume     | only the runtime's prod deps            |
+| Image size goal   | doesn't matter                           | small (no Vite, no devDeps, no tests)   |
+| When you rebuild  | only when `package.json` changes         | on every release                        |
+
+## Why one port matters
+
+Many cloud platforms (Heroku, Fly, Cloud Run, App Service) give you exactly one HTTP port and route all traffic to it. Splitting your API and your bundle across two ports either requires a separate web server in front (nginx) or two deployed services. Folding the bundle into Express collapses the whole app into the simplest possible deploy unit: one image, one process, one port.
+
+In Rails terms this is roughly the move from `rails server` + a separate `webpack-dev-server` (dev) to the precompiled-assets-served-by-Rails model (prod) — assets compiled at build time, served from `public/` by the same process that answers the API.

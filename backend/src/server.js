@@ -28,7 +28,8 @@ async function main() {
   await ensureTodosFile(TODOS_FILE);
 
   const store = createStore({ filePath: TODOS_FILE });
-  const app = createApp({ store });
+  const staticDir = process.env.STATIC_DIR || null;
+  const app = createApp({ store, staticDir });
   const httpServer = http.createServer(app);
   const wsHub = createWsHub({ httpServer, path: '/ws' });
 

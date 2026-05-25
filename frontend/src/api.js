@@ -3,7 +3,10 @@
 // Vite exposes env vars prefixed with VITE_ as import.meta.env.VITE_*.
 // In dev that comes from .env.development; in prod we can set them differently.
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3004';
+// In dev VITE_API_URL points at the standalone backend (different port,
+// hence CORS). In prod we build with VITE_API_URL="" so all requests are
+// same-origin relative paths — Express serves both the bundle and the API.
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3004';
 
 async function request(method, path, body) {
   const res = await fetch(`${API_URL}${path}`, {

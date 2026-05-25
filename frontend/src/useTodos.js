@@ -7,7 +7,16 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { api } from './api.js';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3004/ws';
+// In dev VITE_WS_URL is explicit (different port). In prod we build with
+// VITE_WS_URL="" and derive ws[s]://<current-host>/ws from window.location
+// so http→ws and https→wss happen automatically.
+function resolveWsUrl() {
+  const fromEnv = import.meta.env.VITE_WS_URL;
+  if (fromEnv) return fromEnv;
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${window.location.host}/ws`;
+}
+const WS_URL = resolveWsUrl();
 
 export function useTodos() {
   const [todos, setTodos] = useState([]);
