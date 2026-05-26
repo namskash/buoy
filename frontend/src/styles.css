@@ -864,6 +864,7 @@ footer .hint { color: #475569; }
 
 /* Empty state --------------------------------------------------- */
 .empty-canvas {
+  display: flex;
   align-items: center;
   justify-content: center;
 }
