@@ -4,6 +4,10 @@ A floating-bubble to-do app.
 
 Each task is a bubble. Bigger bubbles (higher priority) rise to the top of the canvas, bob around, and gently attract each other. Click to complete (the bubble *pops*), right-click or long-press to see details, drag to throw it across the screen. The "database" is a single human-editable `data/todos.md` file — edit it on your host in any text editor and the running app picks up the change over WebSocket within ~100ms.
 
+| Daydream (light) | Nightswim (dark) |
+|:---:|:---:|
+| ![Buoy in Daydream mode](media/buoy-empty_light.png) | ![Buoy in Nightswim mode](media/buoy-empty_dark.png) |
+
 ## Stack at a glance
 
 | Layer    | Tech                                                       |
