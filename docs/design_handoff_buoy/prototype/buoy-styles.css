@@ -1,0 +1,1075 @@
+/* ============================================================================
+ * Buoy — Design Tokens & Components
+ * This stylesheet IS the implementation spec. Every component below is named
+ * `.buoy-*` and matches the Markdown spec doc.
+ *
+ * Two directions live in the same sheet, switched by `data-direction` on <html>:
+ *   data-direction="daydream"   → light, airy, soap-bubble-in-sunshine
+ *   data-direction="nightswim"  → dark, deep, glowing iridescence
+ *
+ * Within Daydream, `data-theme="dark"` flips to a tasteful dark companion.
+ * Nightswim is dark-only by design.
+ * ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap");
+
+/* ----- 1. TOKENS — DAYDREAM (light, default) -------------------------------- */
+:root,
+[data-direction="daydream"] {
+  /* Surfaces */
+  --bg-base:    #f3f5f8;
+  --bg-canvas:  radial-gradient(120% 80% at 50% 100%, #f0e3f7 0%, #e6eefc 55%, #f1f3fb 100%);
+  --bg-canvas-solid: #ecefff;
+  --surface:        #ffffff;
+  --surface-tint:   #f7f8fb;
+  --surface-sunken: #eef0f4;
+
+  /* Lines */
+  --border:        rgba(40, 30, 50, 0.08);
+  --border-strong: rgba(40, 30, 50, 0.18);
+  --border-focus:  #ff5c8a;
+
+  /* Text */
+  --text:           #221a2e;
+  --text-dim:       #6b6378;
+  --text-faint:     #a39ba8;
+  --text-on-primary:#ffffff;
+  --text-on-canvas: #221a2e;
+
+  /* Semantic */
+  --primary:        #ff5c8a;
+  --primary-hover:  #f74577;
+  --primary-press:  #d83567;
+  --primary-soft:   rgba(255, 92, 138, 0.14);
+  --danger:         #e8344c;
+  --danger-soft:    rgba(232, 52, 76, 0.10);
+  --success:        #1aa37e;
+  --success-soft:   rgba(26, 163, 126, 0.12);
+  --warning:        #f0a93b;
+  --warning-soft:   rgba(240, 169, 59, 0.14);
+  --info:           #3a86ff;
+
+  /* Priority (semantic — encodes urgency, must read at-a-glance) */
+  --prio-1: #93a4c8;   /* slate dust  — calm */
+  --prio-2: #2eb6ff;   /* electric sky */
+  --prio-3: #ffcc1f;   /* hi-vis sunshine — default */
+  --prio-4: #ff8a55;   /* clay */
+  --prio-5: #f05a3a;   /* vermilion — urgent */
+
+  /* Iridescent rim pair used on bubbles */
+  --iri-a: #ffd5e8;
+  --iri-b: #c4e2ff;
+  --iri-c: #fff6c9;
+
+  /* Bubble shading colors (highlight, contact-shadow) */
+  --bubble-highlight: rgba(255, 255, 255, 0.55);
+  --bubble-rim-mix:   rgba(255, 255, 255, 0.38);
+  --bubble-contact:   rgba(34, 26, 46, 0.22);
+
+  /* Type */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", "JetBrains Mono", monospace;
+
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;
+  --fs-lg: 20px;
+  --fs-xl: 28px;
+  --fs-display: 40px;
+
+  --lh-tight: 1.15;
+  --lh-snug:  1.32;
+  --lh-body:  1.5;
+
+  /* Spacing — 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radius */
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   32px;
+  --radius-pill: 9999px;
+
+  /* Elevation — restrained, never harsh */
+  --shadow-1: 0 1px 2px rgba(34, 26, 46, 0.05),
+              0 2px 6px rgba(34, 26, 46, 0.06);
+  --shadow-2: 0 4px 10px rgba(34, 26, 46, 0.06),
+              0 12px 30px rgba(34, 26, 46, 0.10);
+  --shadow-3: 0 12px 28px rgba(34, 26, 46, 0.12),
+              0 32px 80px rgba(34, 26, 46, 0.18);
+  --shadow-focus: 0 0 0 4px rgba(255, 92, 138, 0.28);
+
+  /* The bubble's resting drop-shadow — soft contact + ambient float */
+  --shadow-bubble:
+      0 6px 14px rgba(34, 26, 46, 0.10),
+      0 2px 4px  rgba(34, 26, 46, 0.06);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.32, 0.72, 0.21, 1);
+  --ease-spring:   cubic-bezier(0.22, 1.4, 0.36, 1);
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-mid:  260ms;
+  --duration-slow: 420ms;
+  /* For framer-motion: spring(stiffness=320, damping=22, mass=1) is "hover squish" */
+}
+
+/* ----- 2. DAYDREAM — dark companion ---------------------------------------- */
+[data-direction="daydream"][data-theme="dark"] {
+  --bg-base:    #1c1828;
+  --bg-canvas:  radial-gradient(120% 80% at 50% 100%, #2c2245 0%, #1a1530 55%, #100c1f 100%);
+  --bg-canvas-solid: #16122a;
+  --surface:        #25203a;
+  --surface-tint:   #2b2542;
+  --surface-sunken: #18142c;
+
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.20);
+  --border-focus:  #ff7aa3;
+
+  --text:           #f3edfa;
+  --text-dim:       #a89fc0;
+  --text-faint:     #6b6485;
+  --text-on-canvas: #f3edfa;
+
+  --primary-soft:   rgba(255, 92, 138, 0.20);
+
+  --bubble-highlight: rgba(255, 255, 255, 0.48);
+  --bubble-rim-mix:   rgba(255, 255, 255, 0.28);
+  --bubble-contact:   rgba(0, 0, 0, 0.50);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35),
+              0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.40),
+              0 16px 38px rgba(0, 0, 0, 0.50);
+  --shadow-3: 0 12px 28px rgba(0, 0, 0, 0.50),
+              0 32px 80px rgba(0, 0, 0, 0.60);
+
+  --shadow-bubble:
+      0 8px 22px rgba(0, 0, 0, 0.40),
+      0 2px 6px  rgba(0, 0, 0, 0.45);
+}
+
+/* ----- 3. NIGHTSWIM — deep / luminous --------------------------------------- */
+[data-direction="nightswim"] {
+  --bg-base:    #001824;
+  --bg-canvas:  radial-gradient(140% 100% at 50% 110%, #023a59 0%, #012133 40%, #00101a 100%);
+  --bg-canvas-solid: #012133;
+  --surface:        #052f44;
+  --surface-tint:   #073a55;
+  --surface-sunken: #021823;
+
+  --border:        rgba(160, 180, 255, 0.10);
+  --border-strong: rgba(160, 180, 255, 0.22);
+  --border-focus:  #6be4c1;
+
+  --text:           #f0ecff;
+  --text-dim:       #9d96c4;
+  --text-faint:     #5e587e;
+  --text-on-primary:#06251c;
+  --text-on-canvas: #f0ecff;
+
+  --primary:        #6be4c1;
+  --primary-hover:  #5cdcb4;
+  --primary-press:  #46c8a0;
+  --primary-soft:   rgba(107, 228, 193, 0.18);
+  --danger:         #ff6b80;
+  --danger-soft:    rgba(255, 107, 128, 0.16);
+  --success:        #5be4a8;
+  --success-soft:   rgba(91, 228, 168, 0.16);
+  --warning:        #f7c062;
+  --warning-soft:   rgba(247, 192, 98, 0.14);
+  --info:           #79a8ff;
+
+  --prio-1: #8b95d6;
+  --prio-2: #3fc1ff;
+  --prio-3: #ffd54a;
+  --prio-4: #ff9670;
+  --prio-5: #ff6a4d;   /* vermilion, lifted for dark bg */
+
+  --iri-a: #6ad0ff;
+  --iri-b: #ff9bd6;
+  --iri-c: #fff1a8;
+
+  --bubble-highlight: rgba(255, 255, 255, 0.45);
+  --bubble-rim-mix:   rgba(255, 255, 255, 0.30);
+  --bubble-contact:   rgba(0, 0, 0, 0.60);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4),
+              0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.45),
+              0 16px 40px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.55),
+              0 40px 90px rgba(0, 0, 0, 0.65);
+  --shadow-focus: 0 0 0 4px rgba(107, 228, 193, 0.32);
+
+  --shadow-bubble:
+      0 10px 28px rgba(0, 0, 0, 0.40),
+      0 2px 6px   rgba(0, 0, 0, 0.45),
+      0 0 32px    rgba(107, 228, 193, 0.05);
+}
+
+/* ----- 4. RESET / BASE ------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+#root { height: 100%; display: flex; flex-direction: column; }
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+  color: var(--text);
+  background: var(--bg-base);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button { font-family: inherit; font-size: inherit; }
+input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+
+/* ----- 5. APP SHELL -------------------------------------------------------- */
+.buoy-app {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.buoy-canvas-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0 var(--space-5) var(--space-4);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--bg-canvas);
+  isolation: isolate;
+}
+.buoy-canvas-wrap::before {
+  /* faint vignette — keeps bubbles visually contained */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 50%, transparent 60%, rgba(34, 26, 46, 0.06) 100%);
+  z-index: 1;
+}
+[data-direction="nightswim"] .buoy-canvas-wrap::before,
+[data-direction="daydream"][data-theme="dark"] .buoy-canvas-wrap::before {
+  background: radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+/* ----- 6. HEADER ----------------------------------------------------------- */
+.buoy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6) var(--space-4);
+  gap: var(--space-5);
+}
+.buoy-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.buoy-wordmark .buoy-wm-dot {
+  /* the "o" in Buoy is a real bubble */
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, var(--bubble-highlight), transparent 45%),
+    radial-gradient(circle at 70% 75%, var(--bubble-contact), transparent 55%),
+    linear-gradient(135deg, var(--iri-a), var(--iri-b));
+  box-shadow:
+    inset -2px -3px 5px rgba(0, 0, 0, 0.12),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.45);
+  transform: translateY(0.05em);
+  animation: buoy-wm-bob 4.8s ease-in-out infinite;
+}
+@keyframes buoy-wm-bob {
+  0%, 100% { transform: translateY(0.05em) scale(1); }
+  50%      { transform: translateY(-0.05em) scale(1.04); }
+}
+.buoy-syncstrip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+.buoy-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-dim);
+}
+.buoy-sync-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 0 var(--success-soft);
+}
+.buoy-sync[data-state="live"] .buoy-sync-dot {
+  animation: buoy-sync-pulse 2.6s ease-out infinite;
+}
+.buoy-sync[data-state="reconnecting"] .buoy-sync-dot {
+  background: var(--warning);
+  animation: buoy-sync-warn 0.9s ease-in-out infinite;
+}
+.buoy-sync[data-state="offline"] .buoy-sync-dot { background: var(--danger); }
+@keyframes buoy-sync-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--success-soft); }
+  60%  { box-shadow: 0 0 0 9px rgba(26, 163, 126, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(26, 163, 126, 0); }
+}
+@keyframes buoy-sync-warn {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+.buoy-counts {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+.buoy-counts strong {
+  font-weight: 600;
+  color: var(--text);
+}
+.buoy-counts em {
+  font-style: normal;
+  color: var(--text-faint);
+}
+.buoy-counts .buoy-sep {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  display: inline-block;
+  transform: translateY(-4px);
+  margin: 0 var(--space-1);
+}
+
+/* ----- 7. FOOTER / FAB ----------------------------------------------------- */
+.buoy-footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4) var(--space-6) var(--space-5);
+  gap: var(--space-5);
+}
+.buoy-hint {
+  position: absolute;
+  left: var(--space-6);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  letter-spacing: 0.01em;
+}
+.buoy-hint kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.buoy-fab {
+  /* the restrained pill, anchored bottom-center */
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 14px 24px 14px 20px;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-on-primary);
+  background: var(--primary);
+  border-radius: var(--radius-pill);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12),
+    var(--shadow-2);
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+.buoy-fab:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12),
+    var(--shadow-3);
+}
+.buoy-fab:active {
+  background: var(--primary-press);
+  transform: translateY(0);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.18),
+    var(--shadow-1);
+}
+.buoy-fab:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12),
+    var(--shadow-2),
+    var(--shadow-focus);
+}
+.buoy-fab-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-mid) var(--ease-spring);
+}
+.buoy-fab[data-open="true"] .buoy-fab-icon {
+  transform: rotate(135deg); /* + → ✕ */
+}
+.buoy-fab[data-open="true"] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow:
+    inset 0 0 0 1px var(--border-strong),
+    var(--shadow-2);
+}
+
+/* ----- 8. BUBBLE ----------------------------------------------------------- */
+.buoy-bubble-wrap {
+  /* matter.js writes transform: translate3d() here. Never CSS-animate this layer. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  z-index: 2;
+}
+.buoy-bubble {
+  /* framer-motion animates scale/opacity on this layer only. */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6%;
+  background:
+    /* dark side bottom-right — tinted with color, NOT pure black */
+    radial-gradient(circle at 72% 80%,
+        color-mix(in oklab, var(--bubble-color) 92%, #000 20%) 0%,
+        color-mix(in oklab, var(--bubble-color) 86%, transparent 0%) 50%,
+        transparent 78%),
+    /* light side top-left */
+    radial-gradient(circle at 26% 26%,
+        var(--bubble-highlight) 0%,
+        rgba(255, 255, 255, 0) 38%),
+    /* base fill */
+    var(--bubble-color);
+  box-shadow:
+    inset -6px -10px 22px color-mix(in oklab, var(--bubble-color) 70%, #000 30%),
+    inset 6px 8px 18px var(--bubble-rim-mix),
+    var(--shadow-bubble);
+  transition: filter var(--duration-mid) var(--ease-out);
+  /* priority luminosity (1..5) — scaled by --p */
+  --p: 3;
+  filter: saturate(calc(0.7 + (var(--p) - 1) * 0.14))
+          brightness(calc(0.96 + (var(--p) - 1) * 0.04));
+}
+.buoy-bubble[data-priority="1"] { --bubble-color: var(--prio-1); --p: 1; }
+.buoy-bubble[data-priority="2"] { --bubble-color: var(--prio-2); --p: 2; }
+.buoy-bubble[data-priority="3"] { --bubble-color: var(--prio-3); --p: 3; }
+.buoy-bubble[data-priority="4"] { --bubble-color: var(--prio-4); --p: 4; }
+.buoy-bubble[data-priority="5"] { --bubble-color: var(--prio-5); --p: 5; }
+
+/* Iridescent rim is opt-in only. Default bubbles are subtle (no rim). */
+.buoy-bubble {
+  box-shadow:
+    inset -6px -8px 14px color-mix(in oklab, var(--bubble-color) 60%, #000 30%),
+    inset 4px 5px 10px var(--bubble-rim-mix),
+    var(--shadow-bubble);
+}
+@keyframes buoy-iri-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Specular catch-light — kept subtle so the bubble reads soft, not glossy */
+.buoy-bubble::after {
+  content: "";
+  position: absolute;
+  top: 14%;
+  left: 20%;
+  width: 20%;
+  height: 12%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  filter: blur(5px);
+  pointer-events: none;
+  transform: rotate(-18deg);
+  opacity: 0.55;
+}
+
+.buoy-bubble-label {
+  position: relative;
+  z-index: 1;
+  color: rgba(28, 18, 42, 0.88);
+  font-weight: 600;
+  font-size: clamp(11px, 16%, 17px);
+  line-height: 1.18;
+  letter-spacing: -0.005em;
+  text-shadow: 0 1px 1.5px rgba(255, 255, 255, 0.65);
+  max-width: 86%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  pointer-events: none;
+}
+[data-direction="nightswim"] .buoy-bubble-label,
+[data-direction="daydream"][data-theme="dark"] .buoy-bubble-label {
+  color: rgba(15, 8, 30, 0.92);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+
+/* Long-press / hover ring */
+.buoy-bubble-wrap[data-pressing="true"] .buoy-bubble {
+  filter: saturate(calc(0.7 + (var(--p) - 1) * 0.15))
+          brightness(calc(1.0 + (var(--p) - 1) * 0.06));
+}
+.buoy-bubble-wrap[data-pressing="true"]::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px dashed var(--primary);
+  opacity: 0.6;
+  animation: buoy-press-ring 0.55s ease-out;
+  pointer-events: none;
+}
+@keyframes buoy-press-ring {
+  0%   { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1.0); opacity: 0.6; }
+}
+
+/* ----- 9. POP PARTICLES ---------------------------------------------------- */
+.buoy-pop {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+}
+.buoy-pop-spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bubble-color, var(--prio-3));
+  opacity: 0.9;
+  animation: buoy-spark 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes buoy-spark {
+  0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) translate(var(--dx, 0), var(--dy, 0)) scale(0); opacity: 0; }
+}
+
+/* ----- 10. MODAL ----------------------------------------------------------- */
+.buoy-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 14, 32, 0.42);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  animation: buoy-backdrop-in var(--duration-mid) var(--ease-out);
+}
+[data-direction="nightswim"] .buoy-backdrop,
+[data-direction="daydream"][data-theme="dark"] .buoy-backdrop {
+  background: rgba(4, 2, 14, 0.55);
+}
+@keyframes buoy-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.buoy-modal {
+  position: relative;
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-3);
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  animation: buoy-modal-in 320ms var(--ease-spring);
+}
+@keyframes buoy-modal-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.buoy-modal-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.buoy-modal-title .buoy-wm-dot { width: 0.55em; height: 0.55em; }
+.buoy-modal-sub {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  margin-top: calc(var(--space-5) * -1 + 4px);
+}
+
+/* Field */
+.buoy-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.buoy-field-label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.005em;
+}
+
+.buoy-input,
+.buoy-textarea {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+.buoy-input:hover,
+.buoy-textarea:hover { border-color: var(--border-strong); }
+.buoy-input:focus,
+.buoy-textarea:focus {
+  border-color: var(--border-focus);
+  background: var(--surface);
+  box-shadow: var(--shadow-focus);
+}
+.buoy-input::placeholder,
+.buoy-textarea::placeholder {
+  color: var(--text-faint);
+}
+.buoy-textarea {
+  resize: vertical;
+  min-height: 64px;
+  font-family: inherit;
+  line-height: var(--lh-body);
+}
+
+/* Priority chooser */
+.buoy-prio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.buoy-prio-track {
+  flex: 1;
+  position: relative;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+.buoy-prio-track input[type="range"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  z-index: 2;
+  cursor: pointer;
+}
+.buoy-prio-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--text);
+  box-shadow: var(--shadow-1);
+  cursor: grab;
+}
+.buoy-prio-track input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--text);
+  box-shadow: var(--shadow-1);
+  cursor: grab;
+}
+.buoy-prio-bg {
+  position: absolute;
+  left: 0; right: 0;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg,
+      var(--prio-1) 0%, var(--prio-1) 20%,
+      var(--prio-2) 20%, var(--prio-2) 40%,
+      var(--prio-3) 40%, var(--prio-3) 60%,
+      var(--prio-4) 60%, var(--prio-4) 80%,
+      var(--prio-5) 80%);
+  opacity: 0.5;
+}
+.buoy-prio-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--bubble-color, var(--prio-3));
+  color: rgba(15, 8, 30, 0.86);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.01em;
+  box-shadow:
+    inset -3px -4px 8px rgba(0, 0, 0, 0.15),
+    inset 2px 3px 6px rgba(255, 255, 255, 0.5);
+  transition: none;
+}
+
+/* Modal actions */
+.buoy-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.buoy-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.buoy-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.buoy-btn-primary {
+  background: var(--primary);
+  color: var(--text-on-primary);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12),
+    var(--shadow-1);
+}
+.buoy-btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.buoy-btn-primary:active { background: var(--primary-press); transform: translateY(0); }
+
+.buoy-btn-ghost {
+  background: transparent;
+  color: var(--text-dim);
+}
+.buoy-btn-ghost:hover { background: var(--surface-sunken); color: var(--text); }
+.buoy-btn-ghost:active { background: var(--surface-tint); }
+
+.buoy-btn-danger {
+  background: transparent;
+  color: var(--danger);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.buoy-btn-danger:hover { background: var(--danger-soft); box-shadow: inset 0 0 0 1px var(--danger); }
+.buoy-btn-danger:active { background: var(--danger); color: white; }
+
+/* ----- 11. DETAIL OVERLAY -------------------------------------------------- */
+.buoy-detail-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.buoy-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bubble-color, var(--prio-3));
+  color: rgba(15, 8, 30, 0.86);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow:
+    inset -3px -4px 8px rgba(0, 0, 0, 0.18),
+    inset 2px 3px 6px rgba(255, 255, 255, 0.55),
+    var(--shadow-1);
+}
+.buoy-detail-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: var(--lh-snug);
+}
+.buoy-detail-body {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  margin: 0;
+}
+.buoy-detail-meta {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+}
+.buoy-detail-meta dt {
+  color: var(--text-faint);
+  font-weight: 500;
+}
+.buoy-detail-meta dd {
+  margin: 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.buoy-detail-meta dd.id-mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); }
+
+.buoy-divider {
+  height: 1px;
+  background: var(--border);
+  border: 0;
+  margin: 0;
+}
+
+/* ----- 12. BANNER ---------------------------------------------------------- */
+.buoy-banner {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: var(--space-3);
+  padding: 10px 16px 10px 14px;
+  background: var(--warning-soft);
+  border: 1px solid color-mix(in oklab, var(--warning) 60%, transparent);
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-1);
+  z-index: 6;
+  animation: buoy-banner-in 320ms var(--ease-spring);
+}
+@keyframes buoy-banner-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.buoy-banner-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--warning);
+  animation: buoy-sync-warn 0.9s ease-in-out infinite;
+}
+.buoy-banner-action {
+  margin-left: var(--space-2);
+  font-size: 13px;
+  color: var(--text-dim);
+  background: transparent;
+  border: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-weight: 600;
+  transition: none;
+}
+.buoy-banner-action:hover { background: rgba(0, 0, 0, 0.06); color: var(--text); }
+
+/* ----- 13. EMPTY STATE ----------------------------------------------------- */
+.buoy-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.buoy-empty-inner {
+  text-align: center;
+  max-width: 380px;
+  padding: var(--space-6);
+}
+.buoy-empty-bubble {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto var(--space-5);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 28% 28%, var(--bubble-highlight) 0%, transparent 34%),
+    radial-gradient(circle at 70% 78%,
+        color-mix(in oklab, var(--iri-b) 86%, #000 18%) 0%,
+        color-mix(in oklab, var(--iri-b) 80%, transparent) 55%,
+        transparent 78%),
+    linear-gradient(135deg, var(--iri-a) 0%, var(--iri-b) 50%, var(--iri-c) 100%);
+  box-shadow:
+    inset -10px -14px 28px rgba(0, 0, 0, 0.18),
+    inset 8px 10px 22px var(--bubble-rim-mix),
+    var(--shadow-bubble);
+  position: relative;
+  animation: buoy-empty-bob 5s ease-in-out infinite;
+}
+.buoy-empty-bubble::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 130deg, var(--iri-a), var(--iri-b), var(--iri-c), var(--iri-a));
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 78%, transparent 92%);
+          mask: radial-gradient(circle, transparent 62%, #000 78%, transparent 92%);
+  mix-blend-mode: screen;
+  opacity: 0.65;
+  animation: buoy-iri-spin 14s linear infinite;
+}
+@keyframes buoy-empty-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.buoy-empty-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-2);
+  color: var(--text);
+}
+.buoy-empty-sub {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ----- 14. LOADING SKELETONS ----------------------------------------------- */
+.buoy-skeleton {
+  position: absolute;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5) 0%, transparent 36%),
+    color-mix(in oklab, var(--text-faint) 20%, var(--surface));
+  opacity: 0.55;
+  animation: buoy-skeleton-pulse 1.8s ease-in-out infinite;
+}
+@keyframes buoy-skeleton-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.98); }
+  50%      { opacity: 0.65; transform: scale(1.02); }
+}
+
+/* ----- 15. ICON ------------------------------------------------------------ */
+.buoy-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  fill: currentColor;
+}
+
+/* ----- 16. SCENE PICKER (prototype-only, NOT in real app) ------------------ */
+.buoy-scene {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  gap: 4px;
+  background: rgba(20, 14, 32, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-family: var(--font-body);
+}
+.buoy-scene button {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: none;
+}
+.buoy-scene button:hover { background: rgba(255, 255, 255, 0.08); color: white; }
+.buoy-scene button[data-active="true"] { background: rgba(255, 255, 255, 0.18); color: white; }
+
+/* ----- 17. RESPONSIVE ------------------------------------------------------ */
+@media (max-width: 720px) {
+  .buoy-canvas-wrap { margin: 0 var(--space-3) var(--space-3); border-radius: var(--radius-lg); }
+  .buoy-header { padding: var(--space-4) var(--space-4) var(--space-3); }
+  .buoy-footer { padding: var(--space-3) var(--space-4) var(--space-4); }
+  .buoy-hint { display: none; }
+  .buoy-modal { padding: var(--space-5); border-radius: var(--radius-lg); }
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
