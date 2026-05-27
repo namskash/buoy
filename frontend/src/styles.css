@@ -40,12 +40,12 @@
   --warning-soft:   rgba(240, 169, 59, 0.14);
   --info:           #3a86ff;
 
-  /* Priority */
-  --prio-1: #93a4c8;
-  --prio-2: #2eb6ff;
-  --prio-3: #ffcc1f;
-  --prio-4: #ff8a55;
-  --prio-5: #f05a3a;
+  /* Priority — Sunset · Honey */
+  --prio-1: #93a4c8;   /* slate */
+  --prio-2: #2eb6ff;   /* sky */
+  --prio-3: #ffb627;   /* honey amber */
+  --prio-4: #ff7a3d;   /* persimmon */
+  --prio-5: #e8462a;   /* tomato */
 
   /* Iridescent rim pair */
   --iri-a: #ffd5e8;
@@ -143,9 +143,9 @@
 
   --prio-1: #8b95d6;
   --prio-2: #3fc1ff;
-  --prio-3: #ffd54a;
-  --prio-4: #ff9670;
-  --prio-5: #ff6a4d;
+  --prio-3: #ffc34a;
+  --prio-4: #ff8f5c;
+  --prio-5: #ff5a3c;
 
   --iri-a: #6ad0ff;
   --iri-b: #ff9bd6;
@@ -375,17 +375,15 @@ body {
   cursor: grab;
   pointer-events: auto;
   background:
-    radial-gradient(circle at 72% 80%,
-        color-mix(in oklab, var(--bubble-color) 92%, #000 20%) 0%,
-        color-mix(in oklab, var(--bubble-color) 86%, transparent 0%) 50%,
-        transparent 78%),
-    radial-gradient(circle at 26% 26%,
-        var(--bubble-highlight) 0%,
-        rgba(255, 255, 255, 0) 38%),
-    var(--bubble-color);
+    radial-gradient(circle at 50% 55%,
+        color-mix(in oklab, var(--bubble-color) 88%, #fff 8%) 0%,
+        var(--bubble-color) 60%,
+        color-mix(in oklab, var(--bubble-color) 88%, #000 12%) 100%);
   box-shadow:
-    inset -6px -8px 14px color-mix(in oklab, var(--bubble-color) 60%, #000 30%),
-    inset 4px 5px 10px var(--bubble-rim-mix),
+    inset 0 0 12px rgba(255, 255, 255, 0.20),
+    0 0 0 2px color-mix(in oklab, var(--bubble-color) 70%, transparent),
+    0 0 22px color-mix(in oklab, var(--bubble-color) 50%, transparent),
+    0 0 50px color-mix(in oklab, var(--bubble-color) 30%, transparent),
     var(--shadow-bubble);
   transition: filter var(--duration-mid) var(--ease-out);
   --p: 3;
@@ -401,21 +399,8 @@ body {
 
 .bubble:active { cursor: grabbing; }
 
-/* Specular catch-light */
-.bubble::after {
-  content: "";
-  position: absolute;
-  top: 14%;
-  left: 20%;
-  width: 20%;
-  height: 12%;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
-  filter: blur(5px);
-  pointer-events: none;
-  transform: rotate(-18deg);
-  opacity: 0.55;
-}
+/* Halo has no specular dot — disable the catch-light pseudo-element */
+.bubble::after { display: none; }
 
 .bubble-title {
   position: relative;
