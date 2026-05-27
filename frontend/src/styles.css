@@ -399,6 +399,8 @@ body {
 
 .bubble:active { cursor: grabbing; }
 
+.bubble[data-done] { opacity: 0.4; filter: saturate(0.7); }
+
 /* Halo has no specular dot — disable the catch-light pseudo-element */
 .bubble::after { display: none; }
 

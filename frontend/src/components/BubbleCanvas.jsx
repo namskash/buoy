@@ -248,6 +248,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
               <motion.div
                 className="bubble"
                 data-priority={t.priority}
+                data-done={t.done ? '' : undefined}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: [1, 1.3, 0], opacity: [1, 1, 0], transition: { duration: 0.5, times: [0, 0.35, 1] } }}

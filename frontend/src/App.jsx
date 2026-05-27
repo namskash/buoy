@@ -25,6 +25,7 @@ export default function App() {
   const [direction, setDirection] = useDirection();
   const toggleDirection = () =>
     setDirection((d) => (d === 'daydream' ? 'nightswim' : 'daydream'));
+  const [showDone, setShowDone] = useState(false);
   const {
     todos,
     loading,
@@ -37,9 +38,9 @@ export default function App() {
   } = useTodos();
   const [detailId, setDetailId] = useState(null);
 
-  // Canvas shows active todos only. Counts shown separately for context.
   const activeTodos = useMemo(() => todos.filter((t) => !t.done), [todos]);
   const doneCount = todos.length - activeTodos.length;
+  const canvasTodos = showDone ? todos : activeTodos;
 
   // Detail overlay binds to the latest todo each render (in case it updates).
   const detailTodo = useMemo(
@@ -77,6 +78,24 @@ export default function App() {
           <button
             type="button"
             className="direction-toggle"
+            onClick={() => setShowDone((v) => !v)}
+            aria-pressed={showDone}
+            aria-label={showDone ? 'Hide done todos' : 'Show done todos'}
+            title={showDone ? 'Hide done' : 'Show done'}
+          >
+            {showDone ? (
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" fill="currentColor"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="M3 4l18 18M6.5 6.7C4 8.5 2 12 2 12s3 7 10 7c1.9 0 3.5-.5 4.9-1.2M9.9 5.2A11 11 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.1 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+              </svg>
+            )}
+          </button>
+          <button
+            type="button"
+            className="direction-toggle"
             onClick={toggleDirection}
             aria-label={`Switch to ${direction === 'daydream' ? 'nightswim' : 'daydream'}`}
             title={`Switch to ${direction === 'daydream' ? 'Nightswim' : 'Daydream'}`}
@@ -110,11 +129,11 @@ export default function App() {
 
         {loading ? (
           <LoadingSkeleton />
-        ) : activeTodos.length === 0 ? (
+        ) : canvasTodos.length === 0 ? (
           <EmptyState />
         ) : (
           <BubbleCanvas
-            todos={activeTodos}
+            todos={canvasTodos}
             onToggle={toggle}
             onRemove={remove}
             onShowDetails={(t) => setDetailId(t.id)}
