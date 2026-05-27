@@ -25,6 +25,10 @@ const WALL_THICKNESS = 80;
 const LONG_PRESS_MS = 500;
 const CLICK_TOLERANCE = 6;
 
+// Per-priority buoyancy acceleration (negative = upward in matter's coords).
+// P1/P2 barely lift (they linger mid-canvas), P5 rises hard to the top.
+const BUOYANCY = { 1: 0.00012, 2: -0.00004, 3: -0.0003, 4: -0.0007, 5: -0.0012 };
+
 export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails }) {
   const containerRef = useRef(null);
   const engineRef = useRef(null);
@@ -43,7 +47,8 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
     const { Engine, Runner, Bodies, World, Mouse, MouseConstraint, Events, Body } = Matter;
 
     const engine = Engine.create();
-    engine.gravity.y = -0.4;
+    // Disable global gravity; buoyancy is applied per-body by priority below.
+    engine.gravity.y = 0;
     engine.gravity.x = 0;
     engineRef.current = engine;
 
@@ -73,11 +78,17 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
     });
     World.add(engine.world, mouseConstraint);
 
-    // Pairwise attraction (Newton's gravitation, scaled tiny).
-    const G = 4e-7;
+    // Per-frame forces: per-priority buoyancy + pairwise attraction.
+    // Attraction scales with mass*mass, so big bubbles already pull harder;
+    // G is sized so a P5 pair noticeably clusters without the canvas collapsing.
+    const G = 1.2e-6;
     const MIN_DIST = 80;
     Events.on(engine, 'beforeUpdate', () => {
       const bodies = [...bodiesRef.current.values()];
+      for (const body of bodies) {
+        const accel = BUOYANCY[body.plugin?.priority] ?? 0;
+        if (accel) Body.applyForce(body, body.position, { x: 0, y: accel * body.mass });
+      }
       for (let i = 0; i < bodies.length; i++) {
         const a = bodies[i];
         for (let j = i + 1; j < bodies.length; j++) {
@@ -161,6 +172,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
           density: 0.001,
           inertia: Infinity,
           label: `todo:${t.id}`,
+          plugin: { priority: t.priority },
         });
         World.add(engine.world, body);
         bodiesRef.current.set(t.id, body);
@@ -171,6 +183,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
           Body.scale(body, scale, scale);
           body.circleRadius = radius;
         }
+        body.plugin.priority = t.priority;
       }
     }
   }, [todos]);
