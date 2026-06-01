@@ -63,6 +63,10 @@ You can hand-type `- [ ] something new` with no metadata — the parser tolerate
 
 ## Interactions
 
+|                     Daydream (light)                     |                     Nightswim (dark)                     |
+| :------------------------------------------------------: | :------------------------------------------------------: |
+| ![Buoy with todos, light](media/buoy-example_light.png)  | ![Buoy with todos, dark](media/buoy-example_dark.png)    |
+
 | Gesture                      | Action                             |
 | ---------------------------- | ---------------------------------- |
 | **Click** a bubble           | Toggle done (pop animation)        |
