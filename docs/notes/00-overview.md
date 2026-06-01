@@ -32,6 +32,33 @@ buoy/
 └── docs/notes/            ← These learning notes
 ```
 
+### Repo layout
+
+```
+buoy/
+├── Dockerfile            # multi-stage prod image
+├── docker-compose.yml    # dev: 2 services with bind mounts
+├── data/
+│   └── todos.md          # ← the "database"
+├── backend/              # Node + Express + ws
+│   ├── Dockerfile        # dev image
+│   ├── src/
+│   │   ├── server.js
+│   │   ├── app.js
+│   │   ├── routes/todos.js
+│   │   ├── store/        # parser, serializer, store, watcher
+│   │   └── ws.js
+│   └── test/             # vitest (27 tests)
+├── frontend/             # React + Vite
+│   ├── Dockerfile        # dev image
+│   ├── public/favicon.svg
+│   └── src/
+│       ├── App.jsx
+│       ├── api.js · useTodos.js
+│       └── components/   # BubbleCanvas, AddTodoModal, DetailOverlay
+└── docs/                 # architecture + design notes
+```
+
 ## How to run it (will be true after later milestones)
 
 - **Dev:** `docker compose up` → app at `http://localhost:5173`.
