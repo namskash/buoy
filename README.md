@@ -8,6 +8,36 @@ Each task is a bubble. Bigger bubbles (higher priority) rise to the top of the c
 | :--------------------------------------------------: | :--------------------------------------------------: |
 | ![Buoy in Daydream mode](media/buoy-empty_light.png) | ![Buoy in Nightswim mode](media/buoy-empty_dark.png) |
 
+## Run Buoy Locally
+
+### Dev (hot reload on both sides) - _QUICKEST_
+
+```bash
+docker compose up --build
+```
+
+Then visit **<http://localhost:5173>**. Edits to `frontend/src/*` hot-reload via Vite HMR; edits to `backend/src/*` restart Node (`--watch`); edits to `data/todos.md` push to the UI via WebSocket.
+
+### Without Docker (two terminals) - _Why would you prefer this?_
+
+```bash
+# Terminal 1
+cd backend && npm install && npm run dev      # → http://localhost:3004
+
+# Terminal 2
+cd frontend && npm install && npm run dev     # → http://localhost:5173
+```
+
+### Production (one container, one port) - _IDEAL_ :)
+
+```bash
+docker build -t buoy:prod .
+docker run --rm -p 3004:3004 -v "$PWD/data:/app/data" buoy:prod
+# Visit http://localhost:3004
+```
+
+The bundle is built with empty `VITE_API_URL`/`VITE_WS_URL` so it uses same-origin relative paths — works behind any reverse proxy, on any host, http or https.
+
 ## Stack at a glance
 
 | Layer    | Tech                                                                                   |
@@ -40,33 +70,3 @@ You can hand-type `- [ ] something new` with no metadata — the parser tolerate
 | **Double-click**             | Delete                             |
 | **Drag**                     | Throw — physics resumes on release |
 | **+** floating button        | Open the add-todo modal            |
-
-## Run Buoy Locally
-
-### Dev (hot reload on both sides) - _QUICKEST_
-
-```bash
-docker compose up --build
-```
-
-Then visit **<http://localhost:5173>**. Edits to `frontend/src/*` hot-reload via Vite HMR; edits to `backend/src/*` restart Node (`--watch`); edits to `data/todos.md` push to the UI via WebSocket.
-
-### Without Docker (two terminals) - _Why would you prefer this?_
-
-```bash
-# Terminal 1
-cd backend && npm install && npm run dev      # → http://localhost:3004
-
-# Terminal 2
-cd frontend && npm install && npm run dev     # → http://localhost:5173
-```
-
-### Production (one container, one port) - _IDEAL_ :)
-
-```bash
-docker build -t buoy:prod .
-docker run --rm -p 3004:3004 -v "$PWD/data:/app/data" buoy:prod
-# Visit http://localhost:3004
-```
-
-The bundle is built with empty `VITE_API_URL`/`VITE_WS_URL` so it uses same-origin relative paths — works behind any reverse proxy, on any host, http or https.
