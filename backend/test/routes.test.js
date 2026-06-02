@@ -30,11 +30,11 @@ describe('REST: /api/todos', () => {
   it('POST creates a todo', async () => {
     const res = await request(ctx.app)
       .post('/api/todos')
-      .send({ title: 'Buy milk', priority: 4, description: 'corner store' });
+      .send({ title: 'Buy milk', priority: 1, description: 'corner store' });
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({
       title: 'Buy milk',
-      priority: 4,
+      priority: 1,
       done: false,
       description: 'corner store',
     });
@@ -47,7 +47,7 @@ describe('REST: /api/todos', () => {
   it('POST response does not leak internal "kind" field', async () => {
     const res = await request(ctx.app)
       .post('/api/todos')
-      .send({ title: 'X', priority: 3 });
+      .send({ title: 'X', priority: 2 });
     expect(res.body.kind).toBeUndefined();
   });
 
@@ -60,7 +60,7 @@ describe('REST: /api/todos', () => {
   it('PATCH toggles done and stamps completed', async () => {
     const { body: created } = await request(ctx.app)
       .post('/api/todos')
-      .send({ title: 'X', priority: 3 });
+      .send({ title: 'X', priority: 2 });
 
     const res = await request(ctx.app)
       .patch(`/api/todos/${created.id}`)
@@ -81,7 +81,7 @@ describe('REST: /api/todos', () => {
   it('DELETE removes the todo', async () => {
     const { body: created } = await request(ctx.app)
       .post('/api/todos')
-      .send({ title: 'X', priority: 3 });
+      .send({ title: 'X', priority: 2 });
 
     const del = await request(ctx.app).delete(`/api/todos/${created.id}`);
     expect(del.status).toBe(204);

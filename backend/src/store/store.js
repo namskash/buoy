@@ -19,7 +19,7 @@ function withDefaults(task) {
     id: task.id || nanoid(8),
     title: task.title,
     done: !!task.done,
-    priority: clampPriority(task.priority ?? 3),
+    priority: clampPriority(task.priority ?? 2),
     created: task.created || new Date().toISOString(),
     completed: task.completed,
     description: task.description,
@@ -28,8 +28,8 @@ function withDefaults(task) {
 
 function clampPriority(p) {
   const n = Number(p);
-  if (!Number.isFinite(n)) return 3;
-  return Math.max(1, Math.min(5, Math.round(n)));
+  if (!Number.isFinite(n)) return 2;
+  return Math.max(0, Math.min(4, Math.round(n)));
 }
 
 export function createStore({ filePath }) {

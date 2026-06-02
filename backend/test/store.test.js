@@ -19,9 +19,9 @@ describe('store', () => {
 
   it('create adds a task and fills defaults', async () => {
     const store = createStore({ filePath: fx.filePath });
-    const created = await store.create({ title: 'Buy milk', priority: 4 });
+    const created = await store.create({ title: 'Buy milk', priority: 1 });
     expect(created.title).toBe('Buy milk');
-    expect(created.priority).toBe(4);
+    expect(created.priority).toBe(1);
     expect(created.id).toBeTruthy();
     expect(created.done).toBe(false);
     expect(created.created).toBeTruthy();
@@ -33,7 +33,7 @@ describe('store', () => {
 
   it('update toggles done and stamps completed', async () => {
     const store = createStore({ filePath: fx.filePath });
-    const t = await store.create({ title: 'X', priority: 3 });
+    const t = await store.create({ title: 'X', priority: 2 });
     const updated = await store.update(t.id, { done: true });
     expect(updated.done).toBe(true);
     expect(updated.completed).toBeTruthy();
@@ -45,17 +45,17 @@ describe('store', () => {
 
   it('remove deletes a task', async () => {
     const store = createStore({ filePath: fx.filePath });
-    const t = await store.create({ title: 'X', priority: 3 });
+    const t = await store.create({ title: 'X', priority: 2 });
     await store.remove(t.id);
     expect(await store.list()).toHaveLength(0);
   });
 
-  it('clamps priority into 1..5', async () => {
+  it('clamps priority into 0..4', async () => {
     const store = createStore({ filePath: fx.filePath });
     const high = await store.create({ title: 'A', priority: 99 });
     const low = await store.create({ title: 'B', priority: -3 });
-    expect(high.priority).toBe(5);
-    expect(low.priority).toBe(1);
+    expect(high.priority).toBe(4);
+    expect(low.priority).toBe(0);
   });
 
   it('serializes concurrent writes (no lost updates)', async () => {
@@ -63,7 +63,7 @@ describe('store', () => {
     // Fire 20 creates in parallel.
     await Promise.all(
       Array.from({ length: 20 }, (_, i) =>
-        store.create({ title: `task-${i}`, priority: 3 }),
+        store.create({ title: `task-${i}`, priority: 2 }),
       ),
     );
     const list = await store.list();
@@ -79,17 +79,17 @@ describe('store', () => {
     await writeFile(fx.filePath, '# Buoy\n- [ ] hand\n', 'utf8');
     const store = createStore({ filePath: fx.filePath });
     // Trigger a write by creating something else.
-    await store.create({ title: 'other', priority: 3 });
+    await store.create({ title: 'other', priority: 2 });
     const onDisk = await readFile(fx.filePath, 'utf8');
     // The bare line should now have metadata baked in.
-    expect(onDisk).toMatch(/- \[ \] hand <!-- id:\S+ priority:3 created:[^ ]+ -->/);
+    expect(onDisk).toMatch(/- \[ \] hand <!-- id:\S+ priority:2 created:[^ ]+ -->/);
   });
 
   it('subscribe is called on every mutation', async () => {
     const store = createStore({ filePath: fx.filePath });
     let count = 0;
     store.subscribe(() => count++);
-    const t = await store.create({ title: 'X', priority: 3 });
+    const t = await store.create({ title: 'X', priority: 2 });
     await store.update(t.id, { done: true });
     await store.remove(t.id);
     // setImmediate makes the emit async — wait a tick.
@@ -100,7 +100,7 @@ describe('store', () => {
   it('wasJustWritten flips true right after a write', async () => {
     const store = createStore({ filePath: fx.filePath });
     expect(store.wasJustWritten()).toBe(false);
-    await store.create({ title: 'X', priority: 3 });
+    await store.create({ title: 'X', priority: 2 });
     expect(store.wasJustWritten()).toBe(true);
   });
 });

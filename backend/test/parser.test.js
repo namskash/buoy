@@ -15,17 +15,17 @@ describe('parser', () => {
   });
 
   it('parses metadata from HTML comment', () => {
-    const line = '- [ ] T <!-- id:abc priority:4 created:2026-01-01T00:00:00Z -->\n';
+    const line = '- [ ] T <!-- id:abc priority:1 created:2026-01-01T00:00:00Z -->\n';
     const [task] = parse(line);
     expect(task).toMatchObject({
       id: 'abc',
-      priority: 4,
+      priority: 1,
       created: '2026-01-01T00:00:00Z',
     });
   });
 
   it('parses quoted description with spaces', () => {
-    const line = '- [ ] T <!-- id:a priority:2 description:"hello world" -->\n';
+    const line = '- [ ] T <!-- id:a priority:3 description:"hello world" -->\n';
     const [task] = parse(line);
     expect(task.description).toBe('hello world');
   });
@@ -50,8 +50,8 @@ describe('round-trip parse → serialize', () => {
     const md =
       '# Buoy Todos\n' +
       '\n' +
-      '- [ ] Buy milk <!-- id:a1 priority:3 created:2026-05-21T10:00:00Z -->\n' +
-      '- [x] Done <!-- id:a2 priority:5 created:2026-05-20T09:00:00Z completed:2026-05-20T18:00:00Z -->\n';
+      '- [ ] Buy milk <!-- id:a1 priority:2 created:2026-05-21T10:00:00Z -->\n' +
+      '- [x] Done <!-- id:a2 priority:0 created:2026-05-20T09:00:00Z completed:2026-05-20T18:00:00Z -->\n';
     expect(serialize(parse(md))).toBe(md);
   });
 
