@@ -69,7 +69,7 @@ export default function DetailOverlay({ todo, onClose, onToggle, onRemove }) {
               <dt>priority</dt>
               <dd>
                 P{todo.priority}
-                <span className="meta-faint"> · {['—','calm','steady','warm','hot','urgent'][todo.priority]}</span>
+                <span className="meta-faint"> · {['urgent','hot','warm','steady','calm'][todo.priority]}</span>
               </dd>
               <dt>id</dt>
               <dd className="id-mono">{todo.id.slice(0, 8)}</dd>

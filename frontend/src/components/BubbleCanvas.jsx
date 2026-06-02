@@ -20,14 +20,14 @@ import { useEffect, useRef, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Matter from 'matter-js';
 
-const RADIUS_FOR = (priority) => 18 + priority * 12;
+const RADIUS_FOR = (priority) => 18 + (4 - priority) * 12;
 const WALL_THICKNESS = 80;
 const LONG_PRESS_MS = 500;
 const CLICK_TOLERANCE = 6;
 
 // Per-priority buoyancy acceleration (negative = upward in matter's coords).
-// P1/P2 barely lift (they linger mid-canvas), P5 rises hard to the top.
-const BUOYANCY = { 1: 0.00012, 2: -0.00004, 3: -0.0003, 4: -0.0007, 5: -0.0012 };
+// P3/P4 barely lift (they linger mid-canvas), P0 rises hard to the top.
+const BUOYANCY = { 0: -0.0012, 1: -0.0007, 2: -0.0003, 3: -0.00004, 4: 0.00012 };
 
 export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails }) {
   const containerRef = useRef(null);
@@ -80,7 +80,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
 
     // Per-frame forces: per-priority buoyancy + pairwise attraction.
     // Attraction scales with mass*mass, so big bubbles already pull harder;
-    // G is sized so a P5 pair noticeably clusters without the canvas collapsing.
+    // G is sized so a P0 pair noticeably clusters without the canvas collapsing.
     const G = 1.2e-6;
     const MIN_DIST = 80;
     Events.on(engine, 'beforeUpdate', () => {

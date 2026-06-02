@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 export default function AddTodoModal({ onAdd }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState(3);
+  const [priority, setPriority] = useState(2);
   const [description, setDescription] = useState('');
   const titleRef = useRef(null);
 
@@ -28,7 +28,7 @@ export default function AddTodoModal({ onAdd }) {
     e.preventDefault();
     if (!title.trim()) return;
     onAdd({ title: title.trim(), priority, description: description.trim() || undefined });
-    setTitle(''); setPriority(3); setDescription('');
+    setTitle(''); setPriority(2); setDescription('');
     setOpen(false);
   }
 
@@ -93,12 +93,12 @@ export default function AddTodoModal({ onAdd }) {
                     <div className="priority-bg" aria-hidden="true" />
                     <input
                       type="range"
-                      min="1"
-                      max="5"
+                      min="0"
+                      max="4"
                       step="1"
-                      value={priority}
-                      onChange={(e) => setPriority(Number(e.target.value))}
-                      aria-label="Priority 1 to 5"
+                      value={4 - priority}
+                      onChange={(e) => setPriority(4 - Number(e.target.value))}
+                      aria-label="Priority 0 to 4 (right is highest)"
                     />
                   </div>
                   <span
