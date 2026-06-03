@@ -16,8 +16,8 @@ That magic only works if **the file itself is the source of truth**. The Node se
 ```
 # Buoy Todos
 
-- [ ] Buy milk <!-- id:a1b2c3 priority:3 created:2026-05-21T10:00:00Z -->
-- [x] Ship PR  <!-- id:d4e5f6 priority:5 created:2026-05-20T09:00:00Z completed:2026-05-20T18:00:00Z -->
+- [ ] Buy milk <!-- id:a1b2c3 priority:2 created:2026-05-21T10:00:00Z -->
+- [x] Ship PR  <!-- id:d4e5f6 priority:0 created:2026-05-20T09:00:00Z completed:2026-05-20T18:00:00Z -->
 ```
 
 Two ideas to notice:
@@ -27,7 +27,7 @@ Two ideas to notice:
 
 ## Why HTML-comment metadata vs. inline?
 
-We considered things like `- [ ] (P3) Buy milk` to encode priority. Three problems with that:
+We considered things like `- [ ] (P2) Buy milk` to encode priority. Three problems with that:
 
 - It's noisy for human readers.
 - We'd reinvent a mini-syntax for every new field (timestamps, descriptions...).
@@ -37,7 +37,7 @@ HTML comments solve all three: invisible when rendered, structured (`key:value`)
 
 ## What "hand-typed tasks" means
 
-If you type a bare line like `- [ ] new idea` into the file, the parser still recognises it as a task (just with no metadata). On the **next** time the app writes the file, it fills in `id`, `priority` (defaults to 3), and `created` for that task — so the file becomes self-healing.
+If you type a bare line like `- [ ] new idea` into the file, the parser still recognises it as a task (just with no metadata). On the **next** time the app writes the file, it fills in `id`, `priority` (defaults to 2 — the middle of the 0–4 range, where 0 = highest urgency), and `created` for that task — so the file becomes self-healing.
 
 ## The two scariest words: race conditions
 

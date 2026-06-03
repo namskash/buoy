@@ -14,7 +14,7 @@ Output format I'd love: a Markdown spec doc I can implement against, plus an ASC
 
 A floating-bubble to-do app, built as a learning project (React + Node, for a Rails dev). Each task is a **bubble**:
 
-- **Size** encodes **priority** (1–5). `radius = 12 + priority * 10` px → priority-1 ≈ 44px, priority-5 ≈ 124px diameter.
+- **Size** encodes **priority** (0–4, where **P0 is highest urgency**). `radius = 18 + (4 - priority) * 12` px → P4 ≈ 36px, P0 ≈ 132px diameter.
 - Real 2D physics (matter.js): **inverted gravity** so bubbles rise. Bigger ones cluster at the top. They **attract each other** weakly (pairwise inverse-square), so they tend to clump rather than scatter.
 - Idle bubbles get small random "nudges" every ~1.5s so the scene never sits perfectly still.
 - Click = mark done (the bubble **pops** — scale-up + fade + small particle burst).
@@ -65,7 +65,7 @@ The "database" is a single human-editable `data/todos.md` file — every change 
             │  [ buy a thing            ]     │
             │                                 │
             │  Priority                       │
-            │  [────●────────]   [ P3 ]       │ ← slider 1..5 + colored chip
+            │  [────●────────]   [ P2 ]       │ ← slider 0..4 (right = P0 highest) + colored chip
             │                                 │
             │  Description (optional)         │
             │  [                         ]    │
@@ -83,7 +83,7 @@ The "database" is a single human-editable `data/todos.md` file — every change 
 
 ```
             ┌─────────────────────────────────┐
-            │  [P3]  Buy milk                 │
+            │  [P2]  Buy milk                 │
             │  ─────────────────────────────  │
             │  From the corner store          │
             │                                 │
@@ -118,11 +118,11 @@ Strip at the top under the header: "Can't reach the server. Retrying… (attempt
 
 | Priority | Current color | Meaning             |
 |----------|---------------|---------------------|
-| 5        | red `#ef4444` | urgent / largest    |
-| 4        | orange `#f97316` |                  |
-| 3        | yellow `#eab308` | default          |
-| 2        | sky `#38bdf8` |                     |
-| 1        | slate `#64748b` | smallest          |
+| 0        | red `#ef4444` | urgent / largest    |
+| 1        | orange `#f97316` |                  |
+| 2        | yellow `#eab308` | default          |
+| 3        | sky `#38bdf8` |                     |
+| 4        | slate `#64748b` | smallest          |
 
 These are the only **semantic** colors in the app. I'd love a palette where priority is still distinguishable at-a-glance but feels less "tailwind defaults" and more "intentional."
 
@@ -133,7 +133,7 @@ These are the only **semantic** colors in the app. I'd love a palette where prio
 3. **Modals are square in a round world.** Add + Detail modals are flat 1rem-radius cards. Could lean into the bubble aesthetic — circular framing, blurred bubble backdrops, etc.
 4. **Empty state should be charming.** Currently text + an arrow. Could be a single drifting empty bubble, a "first bubble" animation, etc.
 5. **Bubble polish.** The current bubble is a circle with an inset shadow + drop shadow + flat color. Could push toward genuine soap-bubble feel: subtle iridescence, rim light, internal reflection. Must stay performant with up to ~30 bubbles on screen.
-6. **Priority readability.** A P5 bubble next to a P3 should feel like a meaningful difference beyond just "bigger and redder."
+6. **Priority readability.** A P0 bubble next to a P2 should feel like a meaningful difference beyond just "bigger and redder."
 7. **Motion vocabulary.** Spring stiffness/damping for hover, the pop on completion, the FAB rotation, the modal entrance — these should feel like they came from the same family.
 
 ## Token shape I want
@@ -153,12 +153,12 @@ Please give me CSS custom properties grouped like this (names are suggestions, n
   --danger:    ...;
   --success:   ...;
 
-  /* Priority */
+  /* Priority (0 = highest urgency) */
+  --prio-0: ...;
   --prio-1: ...;
   --prio-2: ...;
   --prio-3: ...;
   --prio-4: ...;
-  --prio-5: ...;
 
   /* Type */
   --font-display: ...;

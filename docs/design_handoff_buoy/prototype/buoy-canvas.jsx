@@ -12,7 +12,7 @@ const PHYS = {
   normal: { gravity: -0.16, drag: 0.990, attract: 0.0014, jiggle: 0.08, springK: 0.22 },
   lively: { gravity: -0.26, drag: 0.986, attract: 0.0022, jiggle: 0.18, springK: 0.28 },
 };
-const RADIUS = (priority) => 22 + priority * 10; // px — half the diameter
+const RADIUS = (priority) => 22 + (4 - priority) * 10; // px — half the diameter (P0 = highest urgency = largest)
 
 function nudge(b, mag) {
   b.vx += (Math.random() - 0.5) * mag;
@@ -324,7 +324,7 @@ function BuoyCanvas({
     if (!b) return;
     const todo = todos.find((t) => t.id === id);
     const color = getComputedStyle(document.documentElement)
-      .getPropertyValue(`--prio-${todo?.priority || 3}`).trim() || '#f0c14a';
+      .getPropertyValue(`--prio-${todo?.priority ?? 2}`).trim() || '#f0c14a';
     const popId = `${id}-${Date.now()}`;
     setPopping((p) => [...p, { id: popId, x: b.x, y: b.y, color, size: b.r * 2 }]);
     setTimeout(() => {

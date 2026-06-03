@@ -76,7 +76,7 @@ function BuoyFooter({ open, onToggleFab }) {
 // ─── Add Modal ─────────────────────────────────────────────────────────────
 function BuoyAddModal({ onClose, onAdd }) {
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState(3);
+  const [priority, setPriority] = useState(2);
   const [desc, setDesc] = useState('');
   const inputRef = useRef(null);
 
@@ -124,10 +124,10 @@ function BuoyAddModal({ onClose, onAdd }) {
               <div className="buoy-prio-bg" aria-hidden="true" />
               <input
                 type="range"
-                min={1} max={5} step={1}
-                value={priority}
-                onChange={(e) => setPriority(+e.target.value)}
-                aria-label="Priority 1 to 5"
+                min={0} max={4} step={1}
+                value={4 - priority}
+                onChange={(e) => setPriority(4 - +e.target.value)}
+                aria-label="Priority 0 to 4 (right is highest)"
               />
             </div>
             <span
@@ -195,7 +195,7 @@ function BuoyDetailOverlay({ todo, onClose, onDelete, onToggle }) {
         <dl className="buoy-detail-meta">
           <dt>status</dt>      <dd>{todo.done ? 'done' : 'active'}</dd>
           <dt>created</dt>     <dd>{todo.created}</dd>
-          <dt>priority</dt>    <dd>P{todo.priority} <span style={{ color: 'var(--text-faint)' }}>· {['—','calm','steady','warm','hot','urgent'][todo.priority]}</span></dd>
+          <dt>priority</dt>    <dd>P{todo.priority} <span style={{ color: 'var(--text-faint)' }}>· {['urgent','hot','warm','steady','calm'][todo.priority]}</span></dd>
           <dt>id</dt>          <dd className="id-mono">{todo.id.slice(0, 8)}</dd>
         </dl>
 

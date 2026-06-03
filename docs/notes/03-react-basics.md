@@ -77,7 +77,7 @@ So **your component function will run many times**. Every variable inside it is 
 export default function App() {
   const { todos, loading, error, connected, add, toggle, remove } = useTodos();
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState(3);
+  const [priority, setPriority] = useState(2);
 
   function onSubmit(e) {
     e.preventDefault();

@@ -24,7 +24,7 @@ The bubble is a single `<div class="buoy-bubble">` inside an outer `<div class="
 ```
 
 ### Sizing
-`diameter = (22 + priority × 10) × 2` px → **P1 = 64px, P2 = 84px, P3 = 104px, P4 = 124px, P5 = 144px**.
+`diameter = (22 + (4 - priority) × 10) × 2` px → **P4 = 64px, P3 = 84px, P2 = 104px, P1 = 124px, P0 = 144px** (P0 = highest urgency).
 Set as inline `width` / `height` on the wrapper by React. The inner is `width: 100%; height: 100%`.
 
 ### Visual recipe (in order, top→bottom in `background:`)
@@ -65,13 +65,13 @@ Two more channels stack on top of size + color:
 
 | Priority | Diameter | Saturation × | Brightness × | Feel              |
 |---------:|---------:|-------------:|-------------:|-------------------|
-| **P1**   | 64px     | 0.70         | 0.96         | Dusty, recessive  |
-| **P2**   | 84px     | 0.84         | 1.00         | Cool, present     |
-| **P3**   | 104px    | 0.98         | 1.04         | Default, warm     |
-| **P4**   | 124px    | 1.12         | 1.08         | Vivid             |
-| **P5**   | 144px    | 1.26         | 1.12         | Luminous, urgent  |
+| **P4**   | 64px     | 0.70         | 0.96         | Dusty, recessive  |
+| **P3**   | 84px     | 0.84         | 1.00         | Cool, present     |
+| **P2**   | 104px    | 0.98         | 1.04         | Default, warm     |
+| **P1**   | 124px    | 1.12         | 1.08         | Vivid             |
+| **P0**   | 144px    | 1.26         | 1.12         | Luminous, urgent  |
 
-So a P5 next to a P3 is **larger + hotter hue + more saturated + slightly more luminous**. Four channels working together.
+So a P0 next to a P2 is **larger + hotter hue + more saturated + slightly more luminous**. Four channels working together.
 
 ### States
 - **Hover** (framer-motion on inner) — `scale: 1.06`, spring `{ stiffness: 320, damping: 22, mass: 1 }`.
@@ -156,11 +156,11 @@ Tokens are CSS custom properties. **Never reach for a raw hex in component CSS �
 
 | Token        | Daydream     | Nightswim    | Reads as  |
 |--------------|--------------|--------------|-----------|
-| `--prio-1`   | `#93a4c8`    | `#8b95d6`    | dust slate |
-| `--prio-2`   | `#2eb6ff`    | `#3fc1ff`    | electric sky |
-| `--prio-3`   | `#ffcc1f`    | `#ffd54a`    | hi-vis sunshine — default |
-| `--prio-4`   | `#ff8a55`    | `#ff9670`    | clay |
-| `--prio-5`   | `#f05a3a`    | `#ff6a4d`    | vermilion — urgent |
+| `--prio-0`   | `#f05a3a`    | `#ff6a4d`    | vermilion — urgent |
+| `--prio-1`   | `#ff8a55`    | `#ff9670`    | clay |
+| `--prio-2`   | `#ffcc1f`    | `#ffd54a`    | hi-vis sunshine — default |
+| `--prio-3`   | `#2eb6ff`    | `#3fc1ff`    | electric sky |
+| `--prio-4`   | `#93a4c8`    | `#8b95d6`    | dust slate |
 
 ### Iridescent pair (used in bubble rim + empty-state bubble)
 
@@ -330,7 +330,7 @@ Inset card the bubbles live in. `flex: 1; margin: 0 24px 16px; border-radius: 32
             │  └───────────────────────────────┘  │
             │                                     │
             │  Priority                           │
-            │  ─────●────────────    [   P3   ]  │
+            │  ─────●────────────    [   P2   ]  │
             │                                     │
             │  Description · optional             │
             │  ┌───────────────────────────────┐  │
@@ -359,7 +359,7 @@ Inset card the bubbles live in. `flex: 1; margin: 0 24px 16px; border-radius: 32
 - Row: track (`flex: 1`) + 76×40 colored chip.
 - Track has a colored gradient strip behind the thumb showing the priority palette in segments.
 - Thumb is a 22px circle, 2px `var(--text)` ring, white fill, `--shadow-1`.
-- Chip uses the bubble recipe at small scale — same inset shadows, currently-selected prio color. Updates instantly on slider change. Reads "P1" through "P5".
+- Chip uses the bubble recipe at small scale — same inset shadows, currently-selected prio color. Updates instantly on slider change. Reads "P0" through "P4" (P0 = highest urgency, on the right of the slider).
 
 **Modal actions (`.buoy-actions`)**
 - Right-aligned, gap 12px.
@@ -370,7 +370,7 @@ Inset card the bubbles live in. `flex: 1; margin: 0 24px 16px; border-radius: 32
 
 ```
             ┌─────────────────────────────────────┐
-            │  ╭P3╮  Buy milk                     │
+            │  ╭P2╮  Buy milk                     │
             │  ╰──╯                               │
             │  From the corner store. Whole, not  │
             │  skim.                              │
@@ -379,7 +379,7 @@ Inset card the bubbles live in. `flex: 1; margin: 0 24px 16px; border-radius: 32
             │                                     │
             │  status     active                  │
             │  created    2026-05-25 08:00        │
-            │  priority   P3 · steady             │
+            │  priority   P2 · warm               │
             │  id         a1b2c3d4                │
             │                                     │
             │  [Delete]               [Mark done] │
@@ -387,7 +387,7 @@ Inset card the bubbles live in. `flex: 1; margin: 0 24px 16px; border-radius: 32
 ```
 
 Same modal shell as Add. Differences:
-- **Detail head** — a 44×44 round chip (`.buoy-detail-chip`, the bubble recipe in miniature) carrying the priority text ("P3"), beside the title in Fraunces 20/600.
+- **Detail head** — a 44×44 round chip (`.buoy-detail-chip`, the bubble recipe in miniature) carrying the priority text ("P2"), beside the title in Fraunces 20/600.
 - **Body** — `--text-dim`, 14px, line-height 1.5.
 - **Divider** — `.buoy-divider` 1px `--border`, no margin.
 - **Meta list** — `<dl>` in CSS Grid `84px 1fr`, dt is `--text-faint`/500, dd is `--text`/tabular-nums. The `id` row uses `--font-mono` 13px / `--text-dim`.
@@ -426,7 +426,7 @@ Same modal shell as Add. Differences:
 
 ### 8.8 Loading skeleton (`.buoy-skeleton`)
 
-Three faintly-pulsing circles where bubbles would appear. Sizes 92 / 64 / 44 (mirroring P5 / P3 / P1) at fixed canvas positions (52/28, 30/52, 70/62). Each pulses opacity 0.35↔0.65 + scale 0.98↔1.02 on a 1.8s loop, staggered by 0.3s. **No shimmer** — too noisy for a calm app.
+Three faintly-pulsing circles where bubbles would appear. Sizes 92 / 64 / 44 (mirroring P0 / P2 / P4) at fixed canvas positions (52/28, 30/52, 70/62). Each pulses opacity 0.35↔0.65 + scale 0.98↔1.02 on a 1.8s loop, staggered by 0.3s. **No shimmer** — too noisy for a calm app.
 
 ### 8.9 Scene picker (`.buoy-scene`)
 

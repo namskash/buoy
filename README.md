@@ -55,11 +55,11 @@ The bundle is built with empty `VITE_API_URL`/`VITE_WS_URL` so it uses same-orig
 ```markdown
 # Buoy Todos
 
-- [ ] `nvim` - Install harpoon <!-- id:a1b2c3 priority:3 created:2026-05-21T10:00:00Z description:"From the corner store" -->
-- [x] Ship the bubble app <!-- id:d4e5f6 priority:5 created:2026-05-20T09:00:00Z completed:2026-05-20T18:00:00Z -->
+- [ ] `nvim` - Install harpoon <!-- id:a1b2c3 priority:2 created:2026-05-21T10:00:00Z description:"From the corner store" -->
+- [x] Ship the bubble app <!-- id:d4e5f6 priority:0 created:2026-05-20T09:00:00Z completed:2026-05-20T18:00:00Z -->
 ```
 
-You can hand-type `- [ ] something new` with no metadata — the parser tolerates the absence, and the next write fills in defaults (new id, priority 3, timestamps).
+You can hand-type `- [ ] something new` with no metadata — the parser tolerates the absence, and the next write fills in defaults (new id, priority 2, timestamps). Priorities run 0–4, with **P0 being the most urgent** (biggest, hottest bubble).
 
 ## Interactions
 

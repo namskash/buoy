@@ -49,12 +49,12 @@
   --warning-soft:   rgba(240, 169, 59, 0.14);
   --info:           #3a86ff;
 
-  /* Priority (semantic — encodes urgency, must read at-a-glance) */
-  --prio-1: #93a4c8;   /* slate dust  — calm */
-  --prio-2: #2eb6ff;   /* electric sky */
-  --prio-3: #ffcc1f;   /* hi-vis sunshine — default */
-  --prio-4: #ff8a55;   /* clay */
-  --prio-5: #f05a3a;   /* vermilion — urgent */
+  /* Priority (semantic — P0 = highest urgency, must read at-a-glance) */
+  --prio-0: #f05a3a;   /* vermilion — urgent */
+  --prio-1: #ff8a55;   /* clay */
+  --prio-2: #ffcc1f;   /* hi-vis sunshine — default */
+  --prio-3: #2eb6ff;   /* electric sky */
+  --prio-4: #93a4c8;   /* slate dust  — calm */
 
   /* Iridescent rim pair used on bubbles */
   --iri-a: #ffd5e8;
@@ -190,11 +190,11 @@
   --warning-soft:   rgba(247, 192, 98, 0.14);
   --info:           #79a8ff;
 
-  --prio-1: #8b95d6;
-  --prio-2: #3fc1ff;
-  --prio-3: #ffd54a;
-  --prio-4: #ff9670;
-  --prio-5: #ff6a4d;   /* vermilion, lifted for dark bg */
+  --prio-0: #ff6a4d;   /* vermilion, lifted for dark bg */
+  --prio-1: #ff9670;
+  --prio-2: #ffd54a;
+  --prio-3: #3fc1ff;
+  --prio-4: #8b95d6;
 
   --iri-a: #6ad0ff;
   --iri-b: #ff9bd6;
@@ -499,16 +499,16 @@ input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
     inset 6px 8px 18px var(--bubble-rim-mix),
     var(--shadow-bubble);
   transition: filter var(--duration-mid) var(--ease-out);
-  /* priority luminosity (1..5) — scaled by --p */
+  /* priority luminosity — --p is the inverse urgency level (1..5), scaled here */
   --p: 3;
   filter: saturate(calc(0.7 + (var(--p) - 1) * 0.14))
           brightness(calc(0.96 + (var(--p) - 1) * 0.04));
 }
-.buoy-bubble[data-priority="1"] { --bubble-color: var(--prio-1); --p: 1; }
-.buoy-bubble[data-priority="2"] { --bubble-color: var(--prio-2); --p: 2; }
-.buoy-bubble[data-priority="3"] { --bubble-color: var(--prio-3); --p: 3; }
-.buoy-bubble[data-priority="4"] { --bubble-color: var(--prio-4); --p: 4; }
-.buoy-bubble[data-priority="5"] { --bubble-color: var(--prio-5); --p: 5; }
+.buoy-bubble[data-priority="0"] { --bubble-color: var(--prio-0); --p: 5; }
+.buoy-bubble[data-priority="1"] { --bubble-color: var(--prio-1); --p: 4; }
+.buoy-bubble[data-priority="2"] { --bubble-color: var(--prio-2); --p: 3; }
+.buoy-bubble[data-priority="3"] { --bubble-color: var(--prio-3); --p: 2; }
+.buoy-bubble[data-priority="4"] { --bubble-color: var(--prio-4); --p: 1; }
 
 /* Iridescent rim is opt-in only. Default bubbles are subtle (no rim). */
 .buoy-bubble {
@@ -594,7 +594,7 @@ input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--bubble-color, var(--prio-3));
+  background: var(--bubble-color, var(--prio-2));
   opacity: 0.9;
   animation: buoy-spark 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -755,11 +755,11 @@ input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
   height: 8px;
   border-radius: var(--radius-pill);
   background: linear-gradient(90deg,
-      var(--prio-1) 0%, var(--prio-1) 20%,
-      var(--prio-2) 20%, var(--prio-2) 40%,
-      var(--prio-3) 40%, var(--prio-3) 60%,
-      var(--prio-4) 60%, var(--prio-4) 80%,
-      var(--prio-5) 80%);
+      var(--prio-4) 0%, var(--prio-4) 20%,
+      var(--prio-3) 20%, var(--prio-3) 40%,
+      var(--prio-2) 40%, var(--prio-2) 60%,
+      var(--prio-1) 60%, var(--prio-1) 80%,
+      var(--prio-0) 80%);
   opacity: 0.5;
 }
 .buoy-prio-chip {
@@ -770,7 +770,7 @@ input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
   height: 40px;
   padding: 0 var(--space-4);
   border-radius: var(--radius-pill);
-  background: var(--bubble-color, var(--prio-3));
+  background: var(--bubble-color, var(--prio-2));
   color: rgba(15, 8, 30, 0.86);
   font-weight: 700;
   font-size: var(--fs-sm);
@@ -845,7 +845,7 @@ input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--bubble-color, var(--prio-3));
+  background: var(--bubble-color, var(--prio-2));
   color: rgba(15, 8, 30, 0.86);
   font-weight: 700;
   font-size: 14px;

@@ -117,7 +117,7 @@ Smoke test:
 ```bash
 curl http://localhost:3004/api/todos
 curl -X POST http://localhost:3004/api/todos -H 'content-type: application/json' \
-  -d '{"title":"hi","priority":3}'
+  -d '{"title":"hi","priority":2}'
 ```
 
 ## Tests

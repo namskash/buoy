@@ -49,7 +49,7 @@ Then add a `<html data-direction="…" data-theme="…">` attribute pair so dire
 - Lines: `--border`, `--border-strong`, `--border-focus`
 - Text: `--text`, `--text-dim`, `--text-faint`, `--text-on-primary`
 - Semantic: `--primary` / `-hover` / `-press`, `--danger`, `--success`, `--warning`, `--info`, plus `*-soft` variants
-- Priority: `--prio-1` … `--prio-5`
+- Priority: `--prio-0` … `--prio-4` (P0 = highest urgency)
 - Iridescence (for empty-state bubble): `--iri-a / -b / -c`
 - Bubble shading: `--bubble-highlight`, `--bubble-rim-mix`, `--bubble-contact`
 - Type: `--font-display`, `--font-body`, `--font-mono`, plus `--fs-xs … --fs-display`, `--lh-tight/-snug/-body`
@@ -67,9 +67,9 @@ The bubble is a single `<div class="buoy-bubble">` inside an outer `<div class="
 - A `::after` blob for the (subtle) specular catch-light
 - An iridescent `::before` rim — **already removed**. Bubble is subtle-only.
 
-Drop the relevant CSS from `buoy-styles.css` §8 (the `.buoy-bubble*` rules) into `frontend/src/styles.css`. Apply `data-priority="1..5"` on the inner element — the priority filter (saturate + brightness) is driven by a `--p` custom property the spec details.
+Drop the relevant CSS from `buoy-styles.css` §8 (the `.buoy-bubble*` rules) into `frontend/src/styles.css`. Apply `data-priority="0..4"` on the inner element — the priority filter (saturate + brightness) is driven by a `--p` custom property the spec details (`--p` is the inverse urgency level 1..5; the rules set it from the priority).
 
-**Inline width/height** on the wrapper, set by React from `radius = 22 + priority × 10` (your existing formula). The inner is `width:100%; height:100%`. No other JS-set styles on either layer.
+**Inline width/height** on the wrapper, set by React from `radius = 22 + (4 - priority) × 10` (the formula, inverted for P0=highest). The inner is `width:100%; height:100%`. No other JS-set styles on either layer.
 
 ### 3. Header — wordmark with the bouncing "o"
 
@@ -83,7 +83,7 @@ The "o" in "Buoy" is replaced with a live bubble — see `BuoyHeader` in `buoy-o
 
 Add and Detail overlays share `.buoy-modal` shell. Backdrop is full-viewport `rgba(20,14,32,0.42)` + `backdrop-filter: blur(10px) saturate(140%)`. Entrance is a 320ms spring from `{opacity:0, translateY:14, scale:0.96}` → identity.
 
-Form fields use `--radius-md` (16px), `--surface-sunken` fill, focus shows `--border-focus` + `--shadow-focus`. Priority chooser is a `<input type="range" min=1 max=5>` over a colored gradient strip + a live "P3"-style chip on the right that uses the bubble visual recipe in miniature. See spec §8.4 and §8.5.
+Form fields use `--radius-md` (16px), `--surface-sunken` fill, focus shows `--border-focus` + `--shadow-focus`. Priority chooser is a `<input type="range" min=0 max=4>` (with the rendered value inverted so the right end is P0/highest) over a colored gradient strip + a live "P2"-style chip on the right that uses the bubble visual recipe in miniature. See spec §8.4 and §8.5.
 
 ### 6. Empty / Loading / Reconnecting
 
@@ -125,11 +125,11 @@ For convenience — these all live as tokens, but if you need to quote them in P
 | `--surface`        | `#ffffff`   | `#052f44`   |
 | `--text`           | `#221a2e`   | `#f0ecff`   |
 | `--primary`        | `#ff5c8a`   | `#6be4c1`   |
-| `--prio-1` (slate) | `#93a4c8`   | `#8b95d6`   |
-| `--prio-2` (sky)   | `#2eb6ff`   | `#3fc1ff`   |
-| `--prio-3` (sun)   | `#ffcc1f`   | `#ffd54a`   |
-| `--prio-4` (clay)  | `#ff8a55`   | `#ff9670`   |
-| `--prio-5` (vermilion) | `#f05a3a` | `#ff6a4d` |
+| `--prio-0` (vermilion) | `#f05a3a` | `#ff6a4d` |
+| `--prio-1` (clay)  | `#ff8a55`   | `#ff9670`   |
+| `--prio-2` (sun)   | `#ffcc1f`   | `#ffd54a`   |
+| `--prio-3` (sky)   | `#2eb6ff`   | `#3fc1ff`   |
+| `--prio-4` (slate) | `#93a4c8`   | `#8b95d6`   |
 
 ## Open questions left for you / Eli
 

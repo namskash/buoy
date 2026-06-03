@@ -5,13 +5,13 @@
 const { useState, useEffect, useRef, useMemo } = React;
 
 const SEED_TODOS = [
-{ id: 'ed-001', title: 'Ship the PR', priority: 5, description: 'Buoy redesign branch — needs a screenshot in the PR body.', created: '2026-05-25 09:41' },
-{ id: 'ed-002', title: 'Read the matter.js bodies docs', priority: 3, description: 'Want to understand Body.applyForce vs setVelocity.', created: '2026-05-24 14:02' },
-{ id: 'ed-003', title: 'Set up backups', priority: 4, description: 'todos.md is the database. Back it up.', created: '2026-05-23 22:10' },
-{ id: 'ed-004', title: 'Buy milk', priority: 2, description: 'From the corner store. Whole, not skim.', created: '2026-05-25 08:00' },
-{ id: 'ed-005', title: 'Second-coat the trim', priority: 1, description: '', created: '2026-05-20 19:30' },
-{ id: 'ed-006', title: 'Reply to Sara', priority: 3, description: 'About the photo print order.', created: '2026-05-25 11:12' },
-{ id: 'ed-007', title: 'Refill prescription', priority: 4, description: '', created: '2026-05-25 07:30' }];
+{ id: 'ed-001', title: 'Ship the PR', priority: 0, description: 'Buoy redesign branch — needs a screenshot in the PR body.', created: '2026-05-25 09:41' },
+{ id: 'ed-002', title: 'Read the matter.js bodies docs', priority: 2, description: 'Want to understand Body.applyForce vs setVelocity.', created: '2026-05-24 14:02' },
+{ id: 'ed-003', title: 'Set up backups', priority: 1, description: 'todos.md is the database. Back it up.', created: '2026-05-23 22:10' },
+{ id: 'ed-004', title: 'Buy milk', priority: 3, description: 'From the corner store. Whole, not skim.', created: '2026-05-25 08:00' },
+{ id: 'ed-005', title: 'Second-coat the trim', priority: 4, description: '', created: '2026-05-20 19:30' },
+{ id: 'ed-006', title: 'Reply to Sara', priority: 2, description: 'About the photo print order.', created: '2026-05-25 11:12' },
+{ id: 'ed-007', title: 'Refill prescription', priority: 1, description: '', created: '2026-05-25 07:30' }];
 
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
@@ -44,7 +44,7 @@ function todosForDensity(level) {
     out.push({
       id: 'syn-' + uid(),
       title,
-      priority: 1 + Math.floor(Math.random() * 5),
+      priority: Math.floor(Math.random() * 5),
       description: '',
       created: '2026-05-25 12:00'
     });
