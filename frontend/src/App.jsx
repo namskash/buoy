@@ -6,6 +6,7 @@ import { useTodos } from './useTodos.js';
 import BubbleCanvas from './components/BubbleCanvas.jsx';
 import AddTodoModal from './components/AddTodoModal.jsx';
 import DetailOverlay from './components/DetailOverlay.jsx';
+import EditTodoModal from './components/EditTodoModal.jsx';
 
 const DIRECTION_KEY = 'buoy:direction';
 
@@ -35,8 +36,10 @@ export default function App() {
     add,
     toggle,
     remove,
+    edit,
   } = useTodos();
   const [detailId, setDetailId] = useState(null);
+  const [editTodo, setEditTodo] = useState(null);
 
   const activeTodos = useMemo(() => todos.filter((t) => !t.done), [todos]);
   const doneCount = todos.length - activeTodos.length;
@@ -146,6 +149,13 @@ export default function App() {
         onClose={() => setDetailId(null)}
         onToggle={toggle}
         onRemove={remove}
+        onEdit={(t) => setEditTodo(t)}
+      />
+
+      <EditTodoModal
+        todo={editTodo}
+        onSave={edit}
+        onClose={() => setEditTodo(null)}
       />
 
       <footer className="app-footer">

@@ -11,7 +11,7 @@ function formatDate(iso) {
   return d.toLocaleString();
 }
 
-export default function DetailOverlay({ todo, onClose, onToggle, onRemove }) {
+export default function DetailOverlay({ todo, onClose, onToggle, onRemove, onEdit }) {
   // Close on Escape.
   useEffect(() => {
     if (!todo) return;
@@ -82,6 +82,13 @@ export default function DetailOverlay({ todo, onClose, onToggle, onRemove }) {
                 onClick={() => { onRemove(todo.id); onClose(); }}
               >
                 Delete
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => { onClose(); onEdit(todo); }}
+              >
+                Edit
               </button>
               <button
                 type="button"

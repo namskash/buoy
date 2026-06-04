@@ -119,8 +119,9 @@ export default function AddTodoModal({ onAdd }) {
                   className="text-input"
                   rows="2"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => setDescription(e.target.value.replace(/\n/g, ' '))}
                   placeholder="Anything to remember about this one…"
+                  maxLength={256}
                 />
               </div>
 

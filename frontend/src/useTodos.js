@@ -106,6 +106,10 @@ export function useTodos() {
     (id) => api.remove(id).catch(setError),
     [],
   );
+  const edit = useCallback(
+    (id, patch) => api.update(id, patch).catch(setError),
+    [],
+  );
 
   return {
     todos,
@@ -116,6 +120,7 @@ export function useTodos() {
     add,
     toggle,
     remove,
+    edit,
     refresh,
   };
 }
