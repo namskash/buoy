@@ -46,10 +46,33 @@ export default function App() {
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
   const newSectionInputRef = useRef(null);
+  const [editingSection, setEditingSection] = useState(null);
+  const [editSectionName, setEditSectionName] = useState('');
+  const editSectionInputRef = useRef(null);
 
   useEffect(() => {
     if (addingSection) newSectionInputRef.current?.focus();
   }, [addingSection]);
+
+  useEffect(() => {
+    if (editingSection) editSectionInputRef.current?.focus();
+  }, [editingSection]);
+
+  function startEditSection(name) {
+    setEditingSection(name);
+    setEditSectionName(name);
+  }
+
+  function commitEditSection() {
+    const oldName = editingSection;
+    const newName = editSectionName.trim();
+    setEditingSection(null);
+    setEditSectionName('');
+    if (!newName || newName === oldName) return;
+    api.renameSection(oldName, newName).then(() => {
+      if (activeSection === oldName) setActiveSection(newName);
+    }).catch(() => {});
+  }
 
   function commitNewSection() {
     const name = newSectionName.trim();
@@ -152,15 +175,44 @@ export default function App() {
       {sections.length > 0 && (
         <nav className="tab-strip" aria-label="Sections">
           {sections.map((s) => (
-            <button
-              key={s}
-              type="button"
-              className="tab"
-              data-active={s === activeSection}
-              onClick={() => setActiveSection(s)}
-            >
-              {s}
-            </button>
+            editingSection === s ? (
+              <input
+                key={s}
+                ref={editSectionInputRef}
+                className="tab-new-input"
+                type="text"
+                value={editSectionName}
+                onChange={(e) => setEditSectionName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitEditSection();
+                  if (e.key === 'Escape') { setEditingSection(null); setEditSectionName(''); }
+                }}
+                onBlur={commitEditSection}
+                maxLength={60}
+              />
+            ) : (
+              <span key={s} className="tab-wrap">
+                <button
+                  type="button"
+                  className="tab"
+                  data-active={s === activeSection}
+                  onClick={() => setActiveSection(s)}
+                >
+                  {s}
+                </button>
+                <button
+                  type="button"
+                  className="tab-edit"
+                  onClick={() => startEditSection(s)}
+                  aria-label={`Rename ${s}`}
+                  title={`Rename "${s}"`}
+                >
+                  <svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">
+                    <path d="M4 20h4L18 10l-4-4L4 16v4zM21.7 6.3a1 1 0 0 0 0-1.4l-2.6-2.6a1 1 0 0 0-1.4 0L16 4l4 4 1.7-1.7z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </span>
+            )
           ))}
           {addingSection ? (
             <input
