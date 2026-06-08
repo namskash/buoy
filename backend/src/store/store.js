@@ -88,6 +88,20 @@ export function createStore({ filePath }) {
       return items.filter((i) => i.kind === 'heading').map((i) => i.text);
     },
 
+    renameSection(oldName, newName) {
+      return enqueue(async () => {
+        const items = await readItems();
+        const heading = items.find((i) => i.kind === 'heading' && i.text === oldName);
+        if (!heading) throw new Error(`Section not found: ${oldName}`);
+        if (items.some((i) => i.kind === 'heading' && i.text === newName)) {
+          throw new Error(`Section already exists: ${newName}`);
+        }
+        heading.text = newName;
+        await writeItems(items);
+        return newName;
+      });
+    },
+
     createSection(name) {
       return enqueue(async () => {
         const items = await readItems();
