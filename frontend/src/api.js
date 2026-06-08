@@ -29,4 +29,5 @@ export const api = {
   update: (id, patch) => request('PATCH', `/api/todos/${id}`, patch),
   remove: (id) => request('DELETE', `/api/todos/${id}`),
   sections: () => request('GET', '/api/sections'),
+  createSection: (name) => request('POST', '/api/sections', { name }),
 };

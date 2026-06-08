@@ -19,6 +19,23 @@ export function createSectionsRouter({ store }) {
     }
   });
 
+  // POST /api/sections  body: { name }
+  router.post('/', async (req, res, next) => {
+    try {
+      const { name } = req.body || {};
+      if (typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).json({ error: 'name is required' });
+      }
+      await store.createSection(name.trim());
+      res.status(201).json({ name: name.trim() });
+    } catch (err) {
+      if (err.message && err.message.startsWith('Section already exists')) {
+        return res.status(409).json({ error: err.message });
+      }
+      next(err);
+    }
+  });
+
   return router;
 }
 

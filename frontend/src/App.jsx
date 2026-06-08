@@ -1,8 +1,9 @@
 // App shell. The bubble canvas only sees ACTIVE todos — completed ones
 // pop and disappear; they live on as `- [x]` in todos.md for history.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTodos } from './useTodos.js';
+import { api } from './api.js';
 import BubbleCanvas from './components/BubbleCanvas.jsx';
 import AddTodoModal from './components/AddTodoModal.jsx';
 import DetailOverlay from './components/DetailOverlay.jsx';
@@ -42,6 +43,21 @@ export default function App() {
   const [detailId, setDetailId] = useState(null);
   const [editTodo, setEditTodo] = useState(null);
   const [activeSection, setActiveSection] = useState(null);
+  const [addingSection, setAddingSection] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
+  const newSectionInputRef = useRef(null);
+
+  useEffect(() => {
+    if (addingSection) newSectionInputRef.current?.focus();
+  }, [addingSection]);
+
+  function commitNewSection() {
+    const name = newSectionName.trim();
+    setAddingSection(false);
+    setNewSectionName('');
+    if (!name) return;
+    api.createSection(name).then(() => setActiveSection(name)).catch(() => {});
+  }
 
   // Keep activeSection in sync when sections load or change.
   useEffect(() => {
@@ -146,6 +162,34 @@ export default function App() {
               {s}
             </button>
           ))}
+          {addingSection ? (
+            <input
+              ref={newSectionInputRef}
+              className="tab-new-input"
+              type="text"
+              value={newSectionName}
+              onChange={(e) => setNewSectionName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitNewSection();
+                if (e.key === 'Escape') { setAddingSection(false); setNewSectionName(''); }
+              }}
+              onBlur={commitNewSection}
+              placeholder="Section name…"
+              maxLength={60}
+            />
+          ) : (
+            <button
+              type="button"
+              className="tab-add"
+              onClick={() => setAddingSection(true)}
+              aria-label="Add section"
+              title="Add section"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+              </svg>
+            </button>
+          )}
         </nav>
       )}
 

@@ -88,6 +88,18 @@ export function createStore({ filePath }) {
       return items.filter((i) => i.kind === 'heading').map((i) => i.text);
     },
 
+    createSection(name) {
+      return enqueue(async () => {
+        const items = await readItems();
+        if (items.some((i) => i.kind === 'heading' && i.text === name)) {
+          throw new Error(`Section already exists: ${name}`);
+        }
+        items.push({ kind: 'heading', text: name });
+        await writeItems(items);
+        return name;
+      });
+    },
+
     // Returns the created task.
     create({ title, priority, description, section }) {
       return enqueue(async () => {

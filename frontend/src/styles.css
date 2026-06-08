@@ -362,6 +362,46 @@ body {
   font-weight: 600;
 }
 
+.tab-add {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-faint);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+.tab-add:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-sunken);
+}
+.tab-add:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.tab-new-input {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  outline: none;
+  width: 160px;
+  box-shadow: var(--shadow-focus);
+  transition: width var(--duration-mid) var(--ease-spring);
+}
+.tab-new-input::placeholder { color: var(--text-faint); }
+
 /* Canvas wrap + bubble layer ------------------------------------ */
 .canvas-wrap {
   position: relative;
