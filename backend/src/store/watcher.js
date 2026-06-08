@@ -10,14 +10,9 @@ export function watchTodosFile({ filePath, store, onChange }) {
     ignoreInitial: true,
   });
 
-  watcher.on('change', async () => {
+  watcher.on('change', () => {
     if (store.wasJustWritten()) return; // ignore our own echo
-    try {
-      const todos = await store.list();
-      onChange(todos);
-    } catch (err) {
-      console.error('[watcher] failed to read after change:', err);
-    }
+    onChange();
   });
 
   return watcher;

@@ -23,9 +23,11 @@ function renderTask(task) {
 }
 
 export function serialize(items) {
-  const out = items.map((item) =>
-    item.kind === 'task' ? renderTask(item) : item.text,
-  );
+  const out = items.map((item) => {
+    if (item.kind === 'task') return renderTask(item);
+    if (item.kind === 'heading') return `# ${item.text}`;
+    return item.text;
+  });
   // Always end with exactly one trailing newline.
   return out.join('\n') + '\n';
 }

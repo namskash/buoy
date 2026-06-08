@@ -9,6 +9,7 @@
 // never destroys content a human added.
 
 const TASK_RE = /^- \[( |x)\] (.+?)(?:\s+<!--\s*(.*?)\s*-->)?\s*$/;
+const HEADING_RE = /^# (.+)$/;
 
 // Parse a `key:"quoted value"` or `key:value` metadata blob.
 function parseMeta(raw) {
@@ -28,6 +29,11 @@ export function parse(text) {
   const items = []; // ordered list of { kind: 'task' | 'raw', ... }
 
   for (const line of lines) {
+    const headingMatch = line.match(HEADING_RE);
+    if (headingMatch) {
+      items.push({ kind: 'heading', text: headingMatch[1].trim() });
+      continue;
+    }
     const match = line.match(TASK_RE);
     if (match) {
       const [, doneMark, title, metaRaw] = match;

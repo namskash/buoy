@@ -26,6 +26,13 @@ function withDefaults(task) {
   };
 }
 
+function sectionOf(items, taskIndex) {
+  for (let i = taskIndex - 1; i >= 0; i--) {
+    if (items[i].kind === 'heading') return items[i].text;
+  }
+  return null;
+}
+
 function clampPriority(p) {
   const n = Number(p);
   if (!Number.isFinite(n)) return 2;
@@ -70,11 +77,19 @@ export function createStore({ filePath }) {
     // Read-only.
     async list() {
       const items = await readItems();
-      return tasksOnly(items).map(withDefaults);
+      return items
+        .map((item, idx) => item.kind === 'task' ? { item, idx } : null)
+        .filter(Boolean)
+        .map(({ item, idx }) => ({ ...withDefaults(item), section: sectionOf(items, idx) }));
+    },
+
+    async sections() {
+      const items = await readItems();
+      return items.filter((i) => i.kind === 'heading').map((i) => i.text);
     },
 
     // Returns the created task.
-    create({ title, priority, description }) {
+    create({ title, priority, description, section }) {
       return enqueue(async () => {
         const items = await readItems();
         const newTask = withDefaults({
@@ -83,7 +98,25 @@ export function createStore({ filePath }) {
           description,
           done: false,
         });
-        items.push({ kind: 'task', ...newTask });
+        const taskItem = { kind: 'task', ...newTask };
+
+        if (section != null) {
+          const headingIdx = items.findIndex(
+            (i) => i.kind === 'heading' && i.text === section,
+          );
+          if (headingIdx !== -1) {
+            // Find the next heading after this one (or end of array).
+            let insertAt = items.length;
+            for (let i = headingIdx + 1; i < items.length; i++) {
+              if (items[i].kind === 'heading') { insertAt = i; break; }
+            }
+            items.splice(insertAt, 0, taskItem);
+            await writeItems(items);
+            return newTask;
+          }
+        }
+
+        items.push(taskItem);
         await writeItems(items);
         return newTask;
       });
