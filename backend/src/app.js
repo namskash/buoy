@@ -4,7 +4,7 @@
 import express from 'express';
 import cors from 'cors';
 import { resolve, join } from 'node:path';
-import { createTodosRouter } from './routes/todos.js';
+import { createTodosRouter, createSectionsRouter } from './routes/todos.js';
 
 export function createApp({ store, staticDir } = { store: undefined }) {
   const app = express();
@@ -19,6 +19,7 @@ export function createApp({ store, staticDir } = { store: undefined }) {
   });
 
   app.use('/api/todos', createTodosRouter({ store }));
+  app.use('/api/sections', createSectionsRouter({ store }));
 
   // In production the same Express process serves the built React bundle.
   // staticDir is set by server.js when STATIC_DIR env var points at a dir.

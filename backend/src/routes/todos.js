@@ -6,6 +6,22 @@
 
 import { Router } from 'express';
 
+export function createSectionsRouter({ store }) {
+  const router = Router();
+
+  // GET /api/sections  →  ["Section A", "Section B", ...]
+  router.get('/', async (_req, res, next) => {
+    try {
+      const sections = await store.sections();
+      res.json(sections);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  return router;
+}
+
 export function createTodosRouter({ store }) {
   const router = Router();
 

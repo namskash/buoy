@@ -33,11 +33,15 @@ async function main() {
   const httpServer = http.createServer(app);
   const wsHub = createWsHub({ httpServer, path: '/ws' });
 
+  async function broadcastAll() {
+    const [todos, sections] = await Promise.all([store.list(), store.sections()]);
+    wsHub.broadcast({ type: 'todos:changed', todos, sections });
+  }
+
   // Broadcast on every API-driven mutation.
   store.subscribe(async () => {
     try {
-      const todos = await store.list();
-      wsHub.broadcast({ type: 'todos:changed', todos });
+      await broadcastAll();
     } catch (err) {
       console.error('[buoy] broadcast (mutation) failed:', err);
     }
@@ -48,8 +52,12 @@ async function main() {
   watchTodosFile({
     filePath: TODOS_FILE,
     store,
-    onChange: (todos) => {
-      wsHub.broadcast({ type: 'todos:changed', todos });
+    onChange: async () => {
+      try {
+        await broadcastAll();
+      } catch (err) {
+        console.error('[buoy] broadcast (watcher) failed:', err);
+      }
     },
   });
 
