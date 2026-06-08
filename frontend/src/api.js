@@ -30,4 +30,5 @@ export const api = {
   remove: (id) => request('DELETE', `/api/todos/${id}`),
   sections: () => request('GET', '/api/sections'),
   createSection: (name) => request('POST', '/api/sections', { name }),
+  renameSection: (oldName, newName) => request('PATCH', `/api/sections/${encodeURIComponent(oldName)}`, { name: newName }),
 };
