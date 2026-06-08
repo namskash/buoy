@@ -28,4 +28,5 @@ export const api = {
   create: (payload) => request('POST', '/api/todos', payload),
   update: (id, patch) => request('PATCH', `/api/todos/${id}`, patch),
   remove: (id) => request('DELETE', `/api/todos/${id}`),
+  sections: () => request('GET', '/api/sections'),
 };

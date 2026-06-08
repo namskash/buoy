@@ -20,6 +20,7 @@ const WS_URL = resolveWsUrl();
 
 export function useTodos() {
   const [todos, setTodos] = useState([]);
+  const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -29,8 +30,9 @@ export function useTodos() {
 
   const refresh = useCallback(async () => {
     try {
-      const list = await api.list();
+      const [list, sectionList] = await Promise.all([api.list(), api.sections()]);
       setTodos(list);
+      setSections(sectionList);
       setError(null);
     } catch (err) {
       setError(err);
@@ -63,7 +65,10 @@ export function useTodos() {
       ws.addEventListener('message', (evt) => {
         try {
           const msg = JSON.parse(evt.data);
-          if (msg.type === 'todos:changed') setTodos(msg.todos);
+          if (msg.type === 'todos:changed') {
+            setTodos(msg.todos);
+            if (msg.sections) setSections(msg.sections);
+          }
         } catch (err) {
           console.error('[ws] bad message', err);
         }
@@ -113,6 +118,7 @@ export function useTodos() {
 
   return {
     todos,
+    sections,
     loading,
     error,
     connected,

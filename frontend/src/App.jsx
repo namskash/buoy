@@ -29,6 +29,7 @@ export default function App() {
   const [showDone, setShowDone] = useState(false);
   const {
     todos,
+    sections,
     loading,
     error,
     connected,
@@ -40,10 +41,23 @@ export default function App() {
   } = useTodos();
   const [detailId, setDetailId] = useState(null);
   const [editTodo, setEditTodo] = useState(null);
+  const [activeSection, setActiveSection] = useState(null);
 
-  const activeTodos = useMemo(() => todos.filter((t) => !t.done), [todos]);
-  const doneCount = todos.length - activeTodos.length;
-  const canvasTodos = showDone ? todos : activeTodos;
+  // Keep activeSection in sync when sections load or change.
+  useEffect(() => {
+    setActiveSection((prev) => {
+      if (sections.includes(prev)) return prev;
+      return sections[0] ?? null;
+    });
+  }, [sections]);
+
+  const sectionTodos = useMemo(
+    () => activeSection != null ? todos.filter((t) => t.section === activeSection) : todos,
+    [todos, activeSection],
+  );
+  const activeTodos = useMemo(() => sectionTodos.filter((t) => !t.done), [sectionTodos]);
+  const doneCount = sectionTodos.length - activeTodos.length;
+  const canvasTodos = showDone ? sectionTodos : activeTodos;
 
   // Detail overlay binds to the latest todo each render (in case it updates).
   const detailTodo = useMemo(
@@ -119,6 +133,22 @@ export default function App() {
         </div>
       </header>
 
+      {sections.length > 0 && (
+        <nav className="tab-strip" aria-label="Sections">
+          {sections.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className="tab"
+              data-active={s === activeSection}
+              onClick={() => setActiveSection(s)}
+            >
+              {s}
+            </button>
+          ))}
+        </nav>
+      )}
+
       <div className="canvas-wrap">
         {showReconnectBanner && (
           <div className="banner" role="status" aria-live="polite">
@@ -168,7 +198,7 @@ export default function App() {
           <span className="hint-sep">·</span>
           <kbd>drag</kbd> throw
         </span>
-        <AddTodoModal onAdd={add} />
+        <AddTodoModal onAdd={add} section={activeSection} />
       </footer>
     </div>
   );

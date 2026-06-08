@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-export default function AddTodoModal({ onAdd }) {
+export default function AddTodoModal({ onAdd, section }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState(2);
@@ -27,7 +27,7 @@ export default function AddTodoModal({ onAdd }) {
   function submit(e) {
     e.preventDefault();
     if (!title.trim()) return;
-    onAdd({ title: title.trim(), priority, description: description.trim() || undefined });
+    onAdd({ title: title.trim(), priority, description: description.trim() || undefined, section: section ?? undefined });
     setTitle(''); setPriority(2); setDescription('');
     setOpen(false);
   }
