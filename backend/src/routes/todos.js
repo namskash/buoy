@@ -19,6 +19,27 @@ export function createSectionsRouter({ store }) {
     }
   });
 
+  // PATCH /api/sections/:name  body: { name: newName }
+  router.patch('/:name', async (req, res, next) => {
+    try {
+      const oldName = decodeURIComponent(req.params.name);
+      const { name: newName } = req.body || {};
+      if (typeof newName !== 'string' || newName.trim() === '') {
+        return res.status(400).json({ error: 'name is required' });
+      }
+      await store.renameSection(oldName, newName.trim());
+      res.json({ name: newName.trim() });
+    } catch (err) {
+      if (err.message && err.message.startsWith('Section not found')) {
+        return res.status(404).json({ error: err.message });
+      }
+      if (err.message && err.message.startsWith('Section already exists')) {
+        return res.status(409).json({ error: err.message });
+      }
+      next(err);
+    }
+  });
+
   // POST /api/sections  body: { name }
   router.post('/', async (req, res, next) => {
     try {
