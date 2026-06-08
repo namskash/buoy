@@ -55,7 +55,7 @@ export function createTodosRouter({ store }) {
   // POST /api/todos  body: { title, priority?, description? }
   router.post('/', async (req, res, next) => {
     try {
-      const { title, priority, description } = req.body || {};
+      const { title, priority, description, section } = req.body || {};
       if (typeof title !== 'string' || title.trim() === '') {
         return res.status(400).json({ error: 'title is required' });
       }
@@ -63,6 +63,7 @@ export function createTodosRouter({ store }) {
         title: title.trim(),
         priority,
         description,
+        section,
       });
       res.status(201).json(created);
     } catch (err) {
