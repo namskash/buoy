@@ -18,20 +18,20 @@
   /* Lines */
   --border:        rgba(40, 30, 50, 0.08);
   --border-strong: rgba(40, 30, 50, 0.18);
-  --border-focus:  #ff5c8a;
+  --border-focus:  #6be4c1;
 
   /* Text */
   --text:           #221a2e;
   --text-dim:       #6b6378;
   --text-faint:     #a39ba8;
-  --text-on-primary:#ffffff;
+  --text-on-primary:#06251c;
   --text-on-canvas: #221a2e;
 
   /* Semantic */
-  --primary:        #ff5c8a;
-  --primary-hover:  #f74577;
-  --primary-press:  #d83567;
-  --primary-soft:   rgba(255, 92, 138, 0.14);
+  --primary:        #6be4c1;
+  --primary-hover:  #5cdcb4;
+  --primary-press:  #46c8a0;
+  --primary-soft:   rgba(107, 228, 193, 0.18);
   --danger:         #e8344c;
   --danger-soft:    rgba(232, 52, 76, 0.10);
   --success:        #1aa37e;
@@ -97,7 +97,7 @@
               0 12px 30px rgba(34, 26, 46, 0.10);
   --shadow-3: 0 12px 28px rgba(34, 26, 46, 0.12),
               0 32px 80px rgba(34, 26, 46, 0.18);
-  --shadow-focus: 0 0 0 4px rgba(255, 92, 138, 0.28);
+  --shadow-focus: 0 0 0 4px rgba(107, 228, 193, 0.28);
   --shadow-bubble:
       0 6px 14px rgba(34, 26, 46, 0.10),
       0 2px 4px  rgba(34, 26, 46, 0.06);
