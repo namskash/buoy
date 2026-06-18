@@ -8,7 +8,8 @@
 // requests would otherwise both read the same starting state and overwrite
 // each other's changes. The queue forces one read-modify-write at a time.
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, appendFile } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
 import { EventEmitter } from 'node:events';
 import { nanoid } from 'nanoid';
 import { parse, tasksOnly } from './parser.js';
@@ -99,6 +100,25 @@ export function createStore({ filePath }) {
         heading.text = newName;
         await writeItems(items);
         return newName;
+      });
+    },
+
+    archiveSection(name) {
+      return enqueue(async () => {
+        const items = await readItems();
+        const headingIdx = items.findIndex((i) => i.kind === 'heading' && i.text === name);
+        if (headingIdx === -1) throw new Error(`Section not found: ${name}`);
+
+        const nextHeadingIdx = items.findIndex((i, idx) => idx > headingIdx && i.kind === 'heading');
+        const end = nextHeadingIdx === -1 ? items.length : nextHeadingIdx;
+        const sectionItems = items.slice(headingIdx, end);
+
+        const archivePath = join(dirname(filePath), 'archive.md');
+        await appendFile(archivePath, '\n' + serialize(sectionItems) + '\n', 'utf8');
+
+        items.splice(headingIdx, end - headingIdx);
+        await writeItems(items);
+        return name;
       });
     },
 

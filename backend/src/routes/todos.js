@@ -40,6 +40,20 @@ export function createSectionsRouter({ store }) {
     }
   });
 
+  // DELETE /api/sections/:name  →  archives section to archive.md
+  router.delete('/:name', async (req, res, next) => {
+    try {
+      const name = decodeURIComponent(req.params.name);
+      await store.archiveSection(name);
+      res.status(204).end();
+    } catch (err) {
+      if (err.message?.startsWith('Section not found')) {
+        return res.status(404).json({ error: err.message });
+      }
+      next(err);
+    }
+  });
+
   // POST /api/sections  body: { name }
   router.post('/', async (req, res, next) => {
     try {

@@ -49,6 +49,7 @@ export default function App() {
   const [editingSection, setEditingSection] = useState(null);
   const [editSectionName, setEditSectionName] = useState('');
   const editSectionInputRef = useRef(null);
+  const [deletingSection, setDeletingSection] = useState(null);
 
   useEffect(() => {
     if (addingSection) newSectionInputRef.current?.focus();
@@ -71,6 +72,13 @@ export default function App() {
     if (!newName || newName === oldName) return;
     api.renameSection(oldName, newName).then(() => {
       if (activeSection === oldName) setActiveSection(newName);
+    }).catch(() => {});
+  }
+
+  function confirmDeleteSection(name) {
+    setDeletingSection(null);
+    api.deleteSection(name).then(() => {
+      if (activeSection === name) setActiveSection(null);
     }).catch(() => {});
   }
 
@@ -190,6 +198,24 @@ export default function App() {
                 onBlur={commitEditSection}
                 maxLength={60}
               />
+            ) : deletingSection === s ? (
+              <span key={s} className="tab-wrap tab-confirm">
+                <span className="tab-confirm-label">Archive?</span>
+                <button
+                  type="button"
+                  className="tab-confirm-yes"
+                  onClick={() => confirmDeleteSection(s)}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  className="tab-confirm-no"
+                  onClick={() => setDeletingSection(null)}
+                >
+                  No
+                </button>
+              </span>
             ) : (
               <span key={s} className="tab-wrap">
                 <button
@@ -209,6 +235,17 @@ export default function App() {
                 >
                   <svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">
                     <path d="M4 20h4L18 10l-4-4L4 16v4zM21.7 6.3a1 1 0 0 0 0-1.4l-2.6-2.6a1 1 0 0 0-1.4 0L16 4l4 4 1.7-1.7z" fill="currentColor"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="tab-delete"
+                  onClick={() => setDeletingSection(s)}
+                  aria-label={`Archive ${s}`}
+                  title={`Archive "${s}"`}
+                >
+                  <svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                   </svg>
                 </button>
               </span>

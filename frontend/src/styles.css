@@ -367,13 +367,16 @@ body {
   align-items: center;
   gap: 2px;
 }
-.tab-wrap .tab-edit {
+.tab-wrap .tab-edit,
+.tab-wrap .tab-delete {
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--duration-fast) var(--ease-out);
 }
 .tab-wrap:hover .tab-edit,
-.tab-wrap:focus-within .tab-edit {
+.tab-wrap:hover .tab-delete,
+.tab-wrap:focus-within .tab-edit,
+.tab-wrap:focus-within .tab-delete {
   opacity: 1;
   pointer-events: auto;
 }
@@ -397,6 +400,59 @@ body {
 }
 .tab-edit:hover { color: var(--text-dim); background: var(--surface-sunken); }
 .tab-edit:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.tab-delete {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition: color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+.tab-delete:hover { color: var(--danger); background: var(--danger-soft); }
+.tab-delete:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--danger-soft); }
+
+.tab-confirm {
+  align-items: center;
+  gap: var(--space-2);
+}
+.tab-confirm-label {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+.tab-confirm-yes,
+.tab-confirm-no {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.tab-confirm-yes {
+  background: var(--danger);
+  color: #fff;
+}
+.tab-confirm-yes:hover { background: color-mix(in oklab, var(--danger) 85%, black); }
+.tab-confirm-no {
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+}
+.tab-confirm-no:hover { background: var(--border-strong); }
 
 .tab-add {
   appearance: none;
