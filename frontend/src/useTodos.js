@@ -115,6 +115,10 @@ export function useTodos() {
     (id, patch) => api.update(id, patch).catch(setError),
     [],
   );
+  const clearDoneInSection = useCallback(
+    (name) => api.clearDoneInSection(name).catch(setError),
+    [],
+  );
 
   return {
     todos,
@@ -127,6 +131,7 @@ export function useTodos() {
     toggle,
     remove,
     edit,
+    clearDoneInSection,
     refresh,
   };
 }

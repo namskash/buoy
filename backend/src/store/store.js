@@ -122,6 +122,36 @@ export function createStore({ filePath }) {
       });
     },
 
+    clearDoneInSection(name) {
+      return enqueue(async () => {
+        const items = await readItems();
+        const headingIdx = items.findIndex((i) => i.kind === 'heading' && i.text === name);
+        if (headingIdx === -1) throw new Error(`Section not found: ${name}`);
+
+        const nextHeadingIdx = items.findIndex((i, idx) => idx > headingIdx && i.kind === 'heading');
+        const end = nextHeadingIdx === -1 ? items.length : nextHeadingIdx;
+        const sectionItems = items.slice(headingIdx, end);
+        const doneItems = sectionItems.filter((item) => item.kind === 'task' && item.done);
+
+        if (doneItems.length === 0) return { cleared: 0 };
+
+        const archivePath = join(dirname(filePath), 'archive.md');
+        await appendFile(
+          archivePath,
+          '\n' + serialize([{ kind: 'heading', text: name }, ...doneItems]) + '\n',
+          'utf8',
+        );
+
+        items.splice(
+          headingIdx,
+          end - headingIdx,
+          ...sectionItems.filter((item) => item.kind !== 'task' || !item.done),
+        );
+        await writeItems(items);
+        return { cleared: doneItems.length };
+      });
+    },
+
     createSection(name) {
       return enqueue(async () => {
         const items = await readItems();

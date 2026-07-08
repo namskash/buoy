@@ -32,4 +32,5 @@ export const api = {
   createSection: (name) => request('POST', '/api/sections', { name }),
   renameSection: (oldName, newName) => request('PATCH', `/api/sections/${encodeURIComponent(oldName)}`, { name: newName }),
   deleteSection: (name) => request('DELETE', `/api/sections/${encodeURIComponent(name)}`),
+  clearDoneInSection: (name) => request('POST', `/api/sections/${encodeURIComponent(name)}/clear-done`),
 };

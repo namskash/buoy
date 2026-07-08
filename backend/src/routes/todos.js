@@ -54,6 +54,20 @@ export function createSectionsRouter({ store }) {
     }
   });
 
+  // POST /api/sections/:name/clear-done  → archives done tasks from section to archive.md
+  router.post('/:name/clear-done', async (req, res, next) => {
+    try {
+      const name = decodeURIComponent(req.params.name);
+      const result = await store.clearDoneInSection(name);
+      res.json(result);
+    } catch (err) {
+      if (err.message?.startsWith('Section not found')) {
+        return res.status(404).json({ error: err.message });
+      }
+      next(err);
+    }
+  });
+
   // POST /api/sections  body: { name }
   router.post('/', async (req, res, next) => {
     try {
