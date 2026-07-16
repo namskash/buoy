@@ -258,8 +258,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
                 onPointerMove={(e) => handlers.onPointerMove(e, t)}
                 onPointerUp={(e) => handlers.onPointerUp(e, t)}
                 onContextMenu={(e) => handlers.onContextMenu(e, t)}
-                onDoubleClick={() => onRemove?.(t.id)}
-                title={`${t.title}  ·  P${t.priority}  ·  (click: done · right-click/hold: details · dbl-click: delete · drag: throw)`}
+                title={`${t.title}  ·  P${t.priority}  ·  (click: done · right-click/hold: details · drag: throw)`}
               >
                 <span className="bubble-title">{t.title}</span>
               </motion.div>

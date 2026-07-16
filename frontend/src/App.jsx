@@ -355,8 +355,6 @@ export default function App() {
           <span className="hint-sep">·</span>
           <kbd>hold</kbd> details
           <span className="hint-sep">·</span>
-          <kbd>dbl</kbd> delete
-          <span className="hint-sep">·</span>
           <kbd>drag</kbd> throw
         </span>
         <AddTodoModal onAdd={add} section={activeSection} />
