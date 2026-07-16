@@ -31,10 +31,11 @@ cd frontend && npm install && npm run dev     # → http://localhost:5173
 ### Production (one container, one port) - _IDEAL_ :)
 
 ```bash
-docker build -t buoy:prod .
-docker run --rm -p 3004:3004 -v "$PWD/data:/app/data" buoy:prod
-# Visit http://localhost:3004
+prod-build   # fresh Docker build (--no-cache) + run → http://localhost:3004
+prod-run     # run last-built image (skip rebuild)
 ```
+
+Scripts live in `bin/`. An `.envrc` at the repo root adds `bin/` to your `PATH` via [direnv](https://direnv.net/) — run `direnv allow` once after cloning. Without direnv, prefix with `./bin/prod-build` etc.
 
 The bundle is built with empty `VITE_API_URL`/`VITE_WS_URL` so it uses same-origin relative paths — works behind any reverse proxy, on any host, http or https.
 

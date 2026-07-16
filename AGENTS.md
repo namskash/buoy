@@ -17,3 +17,13 @@ That file tells you how to:
 For technical contributors, the regular [`README.md`](README.md) at the repo
 root is the right entry point — it covers the dev and prod workflows
 directly.
+
+## Scripts (`bin/`)
+
+| Command      | What it does                                        |
+| ------------ | --------------------------------------------------- |
+| `prod-build` | `docker build --no-cache -t buoy:prod .` then runs  |
+| `prod-run`   | Runs the last-built `buoy:prod` image               |
+
+A `.envrc` at the repo root adds `bin/` to `PATH` via direnv (`direnv allow`
+once after clone). Without direnv use `./bin/<script>`.
