@@ -43,10 +43,11 @@ export default function AddTodoModal({ onAdd, section }) {
   // Invisible proxy input that owns keyboard focus for the priority field.
   // 0-4 sets priority directly; arrows nudge it; Enter moves to description.
   function onPriorityProxyKey(e) {
-    if (e.key === 'Enter') { e.preventDefault(); descRef.current?.focus(); return; }
+    if (e.key === 'Enter' || e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); descRef.current?.focus(); return; }
+    if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); titleRef.current?.focus(); return; }
     if (/^[0-4]$/.test(e.key)) { e.preventDefault(); setPriority(Number(e.key)); return; }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); setPriority((p) => Math.min(4, p + 1)); return; }
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); setPriority((p) => Math.max(0, p - 1)); }
+    if (e.key === 'ArrowLeft' || e.key === 'h') { e.preventDefault(); setPriority((p) => Math.min(4, p + 1)); return; }
+    if (e.key === 'ArrowRight' || e.key === 'l') { e.preventDefault(); setPriority((p) => Math.max(0, p - 1)); }
   }
 
   function submit(e) {
@@ -180,6 +181,8 @@ export default function AddTodoModal({ onAdd, section }) {
                 <span><kbd>shift+tab</kbd> prev</span>
                 <span className="hint-sep">·</span>
                 <span><kbd>0–4</kbd> priority</span>
+                <span className="hint-sep">·</span>
+                <span><kbd>hjkl</kbd> vim-style</span>
                 <span className="hint-sep">·</span>
                 <span><kbd>enter</kbd> next / submit</span>
                 <span className="hint-sep">·</span>
