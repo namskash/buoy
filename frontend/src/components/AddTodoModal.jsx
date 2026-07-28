@@ -10,6 +10,22 @@ export default function AddTodoModal({ onAdd, section }) {
   const [priority, setPriority] = useState(2);
   const [description, setDescription] = useState('');
   const titleRef = useRef(null);
+  const priorityProxyRef = useRef(null);
+  const descRef = useRef(null);
+  const submitRef = useRef(null);
+
+  // 'a' key toggles the modal (skip when user is typing in another input/textarea).
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key !== 'a' && e.key !== 'A') return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      e.preventDefault();
+      setOpen((v) => !v);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Close on Escape.
   useEffect(() => {
@@ -23,6 +39,15 @@ export default function AddTodoModal({ onAdd, section }) {
   useEffect(() => {
     if (open) titleRef.current?.focus();
   }, [open]);
+
+  // Invisible proxy input that owns keyboard focus for the priority field.
+  // 0-4 sets priority directly; arrows nudge it; Enter moves to description.
+  function onPriorityProxyKey(e) {
+    if (e.key === 'Enter') { e.preventDefault(); descRef.current?.focus(); return; }
+    if (/^[0-4]$/.test(e.key)) { e.preventDefault(); setPriority(Number(e.key)); return; }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); setPriority((p) => Math.min(4, p + 1)); return; }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); setPriority((p) => Math.max(0, p - 1)); }
+  }
 
   function submit(e) {
     e.preventDefault();
@@ -81,6 +106,7 @@ export default function AddTodoModal({ onAdd, section }) {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); priorityProxyRef.current?.focus(); } }}
                   placeholder="e.g. Ship the PR"
                   maxLength={120}
                 />
@@ -88,17 +114,28 @@ export default function AddTodoModal({ onAdd, section }) {
 
               <div className="field">
                 <label className="field-label">Priority</label>
+                {/* Invisible proxy that owns keyboard focus for priority — prevents 0-4 leaking into real inputs */}
+                <input
+                  ref={priorityProxyRef}
+                  className="priority-proxy"
+                  type="text"
+                  inputMode="none"
+                  readOnly
+                  aria-label="Priority selector — use 0–4 or arrow keys"
+                  onKeyDown={onPriorityProxyKey}
+                />
                 <div className="priority-row">
                   <div className="priority-track">
                     <div className="priority-bg" aria-hidden="true" />
                     <input
+                      tabIndex={-1}
                       type="range"
                       min="0"
                       max="4"
                       step="1"
                       value={4 - priority}
                       onChange={(e) => setPriority(4 - Number(e.target.value))}
-                      aria-label="Priority 0 to 4 (right is highest)"
+                      aria-hidden="true"
                     />
                   </div>
                   <span
@@ -115,11 +152,13 @@ export default function AddTodoModal({ onAdd, section }) {
                   Description <span className="field-optional">· optional</span>
                 </label>
                 <textarea
+                  ref={descRef}
                   id="todo-desc"
                   className="text-input"
                   rows="2"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value.replace(/\n/g, ' '))}
+                  onChange={(e) => setDescription(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitRef.current?.focus(); } }}
                   placeholder="Anything to remember about this one…"
                   maxLength={256}
                 />
@@ -127,12 +166,24 @@ export default function AddTodoModal({ onAdd, section }) {
 
               <div className="modal-actions">
                 <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={!title.trim()}>
+                <button ref={submitRef} type="submit" className="btn btn-primary" disabled={!title.trim()}>
                   <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                     <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
                   </svg>
                   Send it up
                 </button>
+              </div>
+
+              <div className="modal-kbd-hints">
+                <span><kbd>tab</kbd> next field</span>
+                <span className="hint-sep">·</span>
+                <span><kbd>shift+tab</kbd> prev</span>
+                <span className="hint-sep">·</span>
+                <span><kbd>0–4</kbd> priority</span>
+                <span className="hint-sep">·</span>
+                <span><kbd>enter</kbd> next / submit</span>
+                <span className="hint-sep">·</span>
+                <span><kbd>esc</kbd> close</span>
               </div>
             </motion.form>
           </motion.div>

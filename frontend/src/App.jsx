@@ -350,12 +350,17 @@ export default function App() {
       />
 
       <footer className="app-footer">
-        <span className="hint">
+        <span className="hint hint-left">
           <kbd>click</kbd> done
           <span className="hint-sep">·</span>
           <kbd>hold</kbd> details
           <span className="hint-sep">·</span>
           <kbd>drag</kbd> throw
+        </span>
+        <span className="hint hint-right">
+          <kbd>a</kbd> add
+          <span className="hint-sep">·</span>
+          <kbd>esc</kbd> close
         </span>
         <AddTodoModal onAdd={add} section={activeSection} />
       </footer>
