@@ -556,9 +556,9 @@ body {
         color-mix(in oklab, var(--bubble-color) 88%, #000 12%) 100%);
   box-shadow:
     inset 0 0 12px rgba(255, 255, 255, 0.20),
-    0 0 0 2px color-mix(in oklab, var(--bubble-color) 70%, transparent),
-    0 0 22px color-mix(in oklab, var(--bubble-color) 50%, transparent),
-    0 0 50px color-mix(in oklab, var(--bubble-color) 30%, transparent),
+    0 0 0 2px color-mix(in oklab, var(--bubble-color) 75%, transparent),
+    0 0 26px color-mix(in oklab, var(--bubble-color) 58%, transparent),
+    0 0 58px color-mix(in oklab, var(--bubble-color) 38%, transparent),
     var(--shadow-bubble);
   transition: filter var(--duration-mid) var(--ease-out);
   --p: 3;
@@ -575,10 +575,19 @@ body {
 
 .bubble:active { cursor: grabbing; }
 
-.bubble[data-done] { opacity: 0.4; filter: saturate(0.7); }
+.bubble[data-done] {
+  opacity: 0.4;
+  filter: saturate(0.7);
+  background:
+    radial-gradient(circle at 50% 55%,
+        color-mix(in oklab, var(--bubble-color) 78%, transparent) 0%,
+        color-mix(in oklab, var(--bubble-color) 55%, transparent) 60%,
+        color-mix(in oklab, var(--bubble-color) 70%, transparent) 100%);
+}
 
 /* Halo has no specular dot — disable the catch-light pseudo-element */
 .bubble::after { display: none; }
+
 
 .bubble-title {
   position: relative;
