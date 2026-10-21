@@ -16,9 +16,12 @@
 //   - Double-click  → onRemove(todo.id)
 //   - Drag          → matter.js MouseConstraint takes over (movement >6px suppresses click/long-press)
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Matter from 'matter-js';
+import ConfirmModal from './ConfirmModal.jsx';
+
+const DELETE_LABELS = 'abcdefghijklmnopqrstuvwxyz';
 
 const RADIUS_FOR = (priority) => 18 + (4 - priority) * 12;
 const WALL_THICKNESS = 80;
@@ -37,6 +40,34 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
   const nodesRef = useRef(new Map());  // id → DOM wrapper (matter writes transform here)
   // Per-bubble pointer state.
   const pointerStateRef = useRef(new Map()); // id → { startX, startY, moved, longPressTimer }
+
+  // Keyboard-driven delete: 'x' labels the first 26 bubbles a-z, typing a
+  // label picks that bubble, then Enter/y in ConfirmModal deletes it.
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null); // todo or null
+
+  const labelById = useMemo(() => {
+    const map = new Map();
+    todos.slice(0, DELETE_LABELS.length).forEach((t, i) => map.set(t.id, DELETE_LABELS[i]));
+    return map;
+  }, [todos]);
+
+  useEffect(() => {
+    function onKey(e) {
+      const tag = document.activeElement?.tagName;
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable;
+      if (typing) return;
+      if (!deleteMode) {
+        if (e.key === 'x' || e.key === 'X') { e.preventDefault(); setDeleteMode(true); }
+        return;
+      }
+      if (e.key === 'Escape') { e.preventDefault(); setDeleteMode(false); return; }
+      const todo = todos.find((t) => labelById.get(t.id) === e.key.toLowerCase());
+      if (todo) { e.preventDefault(); setPendingDelete(todo); }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [deleteMode, todos, labelById]);
 
   // ----------------------------------------------------------------
   // matter.js setup (once on mount).
@@ -245,6 +276,9 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
               className="bubble-wrapper"
               style={{ width: `${size}px`, height: `${size}px` }}
             >
+              {deleteMode && labelById.has(t.id) && (
+                <span className="bubble-delete-label" aria-hidden="true">{labelById.get(t.id)}</span>
+              )}
               <motion.div
                 className="bubble"
                 data-priority={t.priority}
@@ -266,6 +300,19 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
           );
         })}
       </AnimatePresence>
+
+      <ConfirmModal
+        open={!!pendingDelete}
+        title="Delete todo?"
+        message={pendingDelete ? pendingDelete.title : ''}
+        confirmLabel="Delete"
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (pendingDelete) onRemove?.(pendingDelete.id);
+          setPendingDelete(null);
+          setDeleteMode(false);
+        }}
+      />
     </div>
   );
 }

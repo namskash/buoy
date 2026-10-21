@@ -360,6 +360,8 @@ export default function App() {
         <span className="hint hint-right">
           <kbd>a</kbd> add
           <span className="hint-sep">·</span>
+          <kbd>x</kbd> delete
+          <span className="hint-sep">·</span>
           <kbd>esc</kbd> close
         </span>
         <AddTodoModal onAdd={add} section={activeSection} />

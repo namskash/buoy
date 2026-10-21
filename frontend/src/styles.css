@@ -585,9 +585,27 @@ body {
         color-mix(in oklab, var(--bubble-color) 70%, transparent) 100%);
 }
 
+.bubble-delete-label {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  z-index: 2;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40%;
+  background: var(--danger);
+  color: #fff;
+  font: 700 12px var(--font-mono);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
 /* Halo has no specular dot — disable the catch-light pseudo-element */
 .bubble::after { display: none; }
-
 
 .bubble-title {
   position: relative;

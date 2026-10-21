@@ -4,10 +4,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 export default function ConfirmModal({ open, title, message, confirmLabel, onClose, onConfirm }) {
   useEffect(() => {
     if (!open) return;
-    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    function onKey(e) {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'Enter' || e.key === 'y' || e.key === 'Y') onConfirm();
+    }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open, onClose, onConfirm]);
 
   return (
     <AnimatePresence>
