@@ -12,13 +12,19 @@ Each task is a bubble. Bigger bubbles (higher priority) rise to the top of the c
 
 ### Dev (hot reload on both sides) - _QUICKEST_
 
-Two containers. Nothing to see here.
+Install and start Docker, then run:
 
 ```bash
-docker compose up --build
+./bin/dev
 ```
 
-Then visit **<http://localhost:5173>**. Edits to `frontend/src/*` hot-reload via Vite HMR; edits to `backend/src/*` restart Node (`--watch`); edits to `data/todos.md` push to the UI via WebSocket.
+Visit **<http://localhost:5173>**. Frontend changes hot-reload via Vite; backend changes restart Node. The API runs on port 3005, so dev and production can run side by side.
+
+Dev uses a separate, initially empty `.dev-data/` directory; changes there do not affect your production tasks in `data/`. Edits to `.dev-data/todos.md` also sync to the UI via WebSocket.
+
+- `./bin/dev`: start the dev stack in the foreground. Press Ctrl+C to stop it.
+- `./bin/rebuild-dev`: rebuild images and refresh dependencies, then start. Use after changing dependencies.
+- `./bin/stop-dev`: stop and remove the dev containers and network, without deleting dev data.
 
 ### Without Docker (two terminals) - _Why would you prefer this?_
 
@@ -29,6 +35,8 @@ cd backend && npm install && npm run dev      # → http://localhost:3004
 # Terminal 2
 cd frontend && npm install && npm run dev     # → http://localhost:5173
 ```
+
+Unlike Docker dev, this uses the live `data/` directory and port 3004 by default; do not run it alongside production against the same data.
 
 ### Production (one container, one port) - _IDEAL_ :)
 
@@ -45,7 +53,7 @@ Visit **<http://localhost:3004>**. Port 3004 must be available. The container ru
 - `./bin/run-prod`: starts the existing `buoy:prod` image without rebuilding. Run `build-prod` first if the image doesn't exist.
 - `./bin/rebuild-prod`: stops containers publishing host port 3004 with this repo's `data/` mounted at `/app/data`, regardless of image, then builds and starts a fresh image. Use to replace a running production container after code changes.
 
-**Optional: shorter commands with direnv.** Install [direnv](https://direnv.net/docs/installation.html) and [hook it into your shell](https://direnv.net/docs/hook.html). Then, from the repo root, run `direnv allow` once to approve the project's `.envrc`. It adds `bin/` to your `PATH` while you're in the directory, so you can use `build-prod`, `run-prod`, and `rebuild-prod` without the `./bin/` prefix. Direnv is not needed if you use the paths above.
+**Optional: shorter commands with direnv.** Install [direnv](https://direnv.net/docs/installation.html) and [hook it into your shell](https://direnv.net/docs/hook.html). Then, from the repo root, run `direnv allow` once to approve the project's `.envrc`. It adds `bin/` to your `PATH` while you're in the directory, so you can use `dev`, `rebuild-dev`, `stop-dev`, `build-prod`, `run-prod`, and `rebuild-prod` without the `./bin/` prefix. Direnv is not needed if you use the paths above.
 
 The bundle is built with empty `VITE_API_URL`/`VITE_WS_URL` so it uses same-origin relative paths — works behind any reverse proxy, on any host, http or https.
 
