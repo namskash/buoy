@@ -32,18 +32,20 @@ cd frontend && npm install && npm run dev     # → http://localhost:5173
 
 ### Production (one container, one port) - _IDEAL_ :)
 
+Install and start Docker first. From the repo root, build and run Buoy:
+
 ```bash
-build-prod    # fresh Docker build (--no-cache) + run → http://localhost:3004
-run-prod      # run last-built image (skip rebuild)
-rebuild-prod  # stop matching containers, then build and run
+./bin/build-prod
 ```
 
-**When to use each:**
-- `build-prod`: after code changes, when no production container is running.
-- `run-prod`: to start the existing image again without rebuilding.
-- `rebuild-prod`: after code changes, when you want to replace a running production container. It stops containers publishing host port 3004 with this repo's `data/` mounted at `/app/data`, regardless of image.
+Visit **<http://localhost:3004>**. Port 3004 must be available. The container runs in the foreground; press Ctrl+C to stop it. Your tasks persist in the host's `data/` directory, which is mounted into the container.
 
-Scripts live in `bin/`. Run them from the repo root: `build-prod` and `run-prod` use the current directory for the build context and data mount. An `.envrc` adds `bin/` to your `PATH` via [direnv](https://direnv.net/) — run `direnv allow` once after cloning. Without direnv, use `./bin/build-prod` etc. All three run the container in the foreground; stop it with Ctrl+C.
+**Scripts** (run from the repo root):
+- `./bin/build-prod`: builds a fresh `buoy:prod` image without Docker's build cache, then starts it. Use after code changes when no production container is running.
+- `./bin/run-prod`: starts the existing `buoy:prod` image without rebuilding. Run `build-prod` first if the image doesn't exist.
+- `./bin/rebuild-prod`: stops containers publishing host port 3004 with this repo's `data/` mounted at `/app/data`, regardless of image, then builds and starts a fresh image. Use to replace a running production container after code changes.
+
+**Optional: shorter commands with direnv.** Install [direnv](https://direnv.net/docs/installation.html) and [hook it into your shell](https://direnv.net/docs/hook.html). Then, from the repo root, run `direnv allow` once to approve the project's `.envrc`. It adds `bin/` to your `PATH` while you're in the directory, so you can use `build-prod`, `run-prod`, and `rebuild-prod` without the `./bin/` prefix. Direnv is not needed if you use the paths above.
 
 The bundle is built with empty `VITE_API_URL`/`VITE_WS_URL` so it uses same-origin relative paths — works behind any reverse proxy, on any host, http or https.
 
