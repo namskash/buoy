@@ -32,7 +32,7 @@ const CLICK_TOLERANCE = 6;
 // P3/P4 barely lift (they linger mid-canvas), P0 rises hard to the top.
 const BUOYANCY = { 0: -0.0012, 1: -0.0007, 2: -0.0003, 3: -0.00004, 4: 0.00012 };
 
-export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails }) {
+export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails, selectedId, shellEnabled, onDeleteModeChange }) {
   const containerRef = useRef(null);
   const engineRef = useRef(null);
   const runnerRef = useRef(null);
@@ -41,7 +41,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
   // Per-bubble pointer state.
   const pointerStateRef = useRef(new Map()); // id → { startX, startY, moved, longPressTimer }
 
-  // Keyboard-driven delete: 'x' labels the first 26 bubbles a-z, typing a
+  // Keyboard-driven delete: 'd' labels the first 26 bubbles a-z, typing a
   // label picks that bubble, then Enter/y in ConfirmModal deletes it.
   const [deleteMode, setDeleteMode] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null); // todo or null
@@ -53,12 +53,25 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
   }, [todos]);
 
   useEffect(() => {
+    onDeleteModeChange?.(deleteMode || !!pendingDelete);
+  }, [deleteMode, pendingDelete, onDeleteModeChange]);
+
+  useEffect(() => () => onDeleteModeChange?.(false), [onDeleteModeChange]);
+
+  // Opening another interaction cancels delete selection and its confirmation.
+  useEffect(() => {
+    if (!shellEnabled) { setDeleteMode(false); setPendingDelete(null); }
+  }, [shellEnabled]);
+
+  useEffect(() => {
     function onKey(e) {
-      const tag = document.activeElement?.tagName;
-      const typing = tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable;
-      if (typing) return;
+      if (!shellEnabled || pendingDelete || e.defaultPrevented || e.isComposing || e.repeat ||
+          e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      const active = document.activeElement;
+      const tag = active?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || active?.isContentEditable) return;
       if (!deleteMode) {
-        if (e.key === 'x' || e.key === 'X') { e.preventDefault(); setDeleteMode(true); }
+        if (e.key === 'd') { e.preventDefault(); setDeleteMode(true); }
         return;
       }
       if (e.key === 'Escape') { e.preventDefault(); setDeleteMode(false); return; }
@@ -67,7 +80,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [deleteMode, todos, labelById]);
+  }, [shellEnabled, pendingDelete, deleteMode, todos, labelById]);
 
   // ----------------------------------------------------------------
   // matter.js setup (once on mount).
@@ -281,6 +294,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails 
               )}
               <motion.div
                 className="bubble"
+                data-vim-selected={selectedId === t.id ? '' : undefined}
                 data-priority={t.priority}
                 data-done={t.done ? '' : undefined}
                 initial={{ scale: 0, opacity: 0 }}

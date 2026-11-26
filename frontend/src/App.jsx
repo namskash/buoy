@@ -1,7 +1,8 @@
 // App shell. The bubble canvas only sees ACTIVE todos — completed ones
 // pop and disappear; they live on as `- [x]` in todos.md for history.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import './vim-shell.css';
 import { useTodos } from './useTodos.js';
 import { api } from './api.js';
 import BubbleCanvas from './components/BubbleCanvas.jsx';
@@ -53,6 +54,12 @@ export default function App() {
   const editSectionInputRef = useRef(null);
   const [deletingSection, setDeletingSection] = useState(null);
   const [confirmClearDone, setConfirmClearDone] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const shellRef = useRef(null);
+  const [tabPrefix, setTabPrefix] = useState(false);
+  const onDeleteModeChange = useCallback((active) => setDeleteMode(active), []);
 
   useEffect(() => {
     if (addingSection) newSectionInputRef.current?.focus();
@@ -108,6 +115,76 @@ export default function App() {
   const activeTodos = useMemo(() => sectionTodos.filter((t) => !t.done), [sectionTodos]);
   const doneCount = sectionTodos.length - activeTodos.length;
   const canvasTodos = showDone ? sectionTodos : activeTodos;
+  const shellEnabled = !addOpen && !detailId && !editTodo && !confirmClearDone &&
+    !addingSection && !editingSection && !deletingSection;
+
+  // A selection belongs to the current section and must still be visible.
+  useEffect(() => { setSelectedId(null); }, [activeSection]);
+  useEffect(() => {
+    setSelectedId((id) => id && !canvasTodos.some((todo) => todo.id === id) ? null : id);
+  }, [canvasTodos]);
+
+  useEffect(() => {
+    if (!tabPrefix) return;
+    if (!shellEnabled || deleteMode) { setTabPrefix(false); return; }
+    const timer = window.setTimeout(() => setTabPrefix(false), 1500);
+    const cancel = () => setTabPrefix(false);
+    window.addEventListener('focusin', cancel);
+    return () => { window.clearTimeout(timer); window.removeEventListener('focusin', cancel); };
+  }, [tabPrefix, shellEnabled, deleteMode]);
+
+  useEffect(() => {
+    function onKey(e) {
+      if (!shellEnabled || deleteMode || e.defaultPrevented || e.isComposing ||
+          e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      const active = document.activeElement;
+      const tag = active?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || active?.isContentEditable) return;
+
+      if (tabPrefix) {
+        e.preventDefault();
+        setTabPrefix(false);
+        if (!e.repeat && /^[1-9]$/.test(e.key)) {
+          const section = sections[Number(e.key) - 1];
+          if (section !== undefined) setActiveSection(section);
+        }
+        return;
+      }
+      if (e.key === 'Escape' && selectedId) {
+        e.preventDefault();
+        setSelectedId(null);
+        return;
+      }
+      if (e.key === 'g' && !e.repeat) { e.preventDefault(); setTabPrefix(true); return; }
+      if (e.key === 'a' && !e.repeat) { e.preventDefault(); setAddOpen(true); return; }
+      if (e.key === 'h' || e.key === 'l') {
+        if (!sections.length) return;
+        e.preventDefault();
+        const index = Math.max(0, sections.indexOf(activeSection));
+        const next = Math.max(0, Math.min(sections.length - 1, index + (e.key === 'h' ? -1 : 1)));
+        setActiveSection(sections[next]);
+        return;
+      }
+      if (e.key === 'j' || e.key === 'k') {
+        if (!canvasTodos.length) return;
+        e.preventDefault();
+        const index = canvasTodos.findIndex((todo) => todo.id === selectedId);
+        const next = index === -1 ? (e.key === 'j' ? 0 : canvasTodos.length - 1)
+          : Math.max(0, Math.min(canvasTodos.length - 1, index + (e.key === 'j' ? 1 : -1)));
+        setSelectedId(canvasTodos[next].id);
+        if (tag === 'BUTTON' || tag === 'A') shellRef.current?.focus();
+        return;
+      }
+      // Preserve native activation of a keyboard-focused button or link.
+      if (tag === 'BUTTON' || tag === 'A' || e.repeat) return;
+      const selected = canvasTodos.find((todo) => todo.id === selectedId);
+      if (!selected) return;
+      if (e.key === ' ' || e.key === 'x') { e.preventDefault(); toggle(selected); }
+      if (e.key === 'Enter') { e.preventDefault(); setDetailId(selected.id); }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [shellEnabled, deleteMode, tabPrefix, sections, activeSection, canvasTodos, selectedId, toggle]);
 
   // Detail overlay binds to the latest todo each render (in case it updates).
   const detailTodo = useMemo(
@@ -122,7 +199,7 @@ export default function App() {
   const syncLabel = { live: 'Live', reconnecting: 'Reconnecting…', offline: 'Offline' }[syncState];
 
   return (
-    <div className="app">
+    <div className="app" ref={shellRef} tabIndex={-1}>
       <header className="app-header">
         <div className="wordmark" aria-label="Buoy">
           Bu<span className="wm-dot" aria-hidden="true" />y
@@ -198,7 +275,7 @@ export default function App() {
 
       {sections.length > 0 && (
         <nav className="tab-strip" aria-label="Sections">
-          {sections.map((s) => (
+          {sections.map((s, index) => (
             editingSection === s ? (
               <input
                 key={s}
@@ -240,6 +317,7 @@ export default function App() {
                   data-active={s === activeSection}
                   onClick={() => setActiveSection(s)}
                 >
+                  {index < 9 && <span className="vim-tab-marker" aria-hidden="true">{index + 1}</span>}
                   {s}
                 </button>
                 <button
@@ -316,6 +394,9 @@ export default function App() {
         ) : (
           <BubbleCanvas
             todos={canvasTodos}
+            selectedId={selectedId}
+            shellEnabled={shellEnabled && !tabPrefix}
+            onDeleteModeChange={onDeleteModeChange}
             onToggle={toggle}
             onRemove={remove}
             onShowDetails={(t) => setDetailId(t.id)}
@@ -360,11 +441,26 @@ export default function App() {
         <span className="hint hint-right">
           <kbd>a</kbd> add
           <span className="hint-sep">·</span>
-          <kbd>x</kbd> delete
+          <kbd>j/k</kbd> select
           <span className="hint-sep">·</span>
-          <kbd>esc</kbd> close
+          <kbd>space/x</kbd> done
+          <span className="hint-sep">·</span>
+          <kbd>h/l</kbd> tabs
+          <span className="hint-sep">·</span>
+          <kbd>g 1–9</kbd> jump
+          <span className="hint-sep">·</span>
+          <kbd>d</kbd> delete
         </span>
-        <AddTodoModal onAdd={add} section={activeSection} />
+        <span className="vim-status" role="status" aria-live="polite">
+          {tabPrefix ? 'g … choose tab 1–9' : deleteMode ? 'Delete: choose a bubble label' : ''}
+        </span>
+        <span className="vim-sr-only" role="status" aria-live="polite">
+          {(() => {
+            const selected = canvasTodos.find((todo) => todo.id === selectedId);
+            return selected ? `Selected: ${selected.title}, ${selected.done ? 'done' : 'active'}` : '';
+          })()}
+        </span>
+        <AddTodoModal open={addOpen} onOpen={() => setAddOpen(true)} onClose={() => { setAddOpen(false); shellRef.current?.focus(); }} onAdd={add} section={activeSection} />
       </footer>
     </div>
   );

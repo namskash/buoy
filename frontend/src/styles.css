@@ -1180,3 +1180,18 @@ footer .hint { color: #475569; }
   .hint-left, .hint-right { display: none; }
   .modal { padding: var(--space-5); border-radius: var(--radius-lg); }
 }
+
+/* Add dialog Vim mode: the preview is not actual input focus. */
+.vim-add-modal:focus { outline: none; }
+.vim-add-field[data-preview="true"] .text-input,
+.vim-add-field[data-preview="true"] .priority-row {
+  outline: 2px dashed var(--border-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-md);
+}
+.vim-add-mode {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+}

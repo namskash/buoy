@@ -12,13 +12,24 @@ function formatDate(iso) {
 }
 
 export default function DetailOverlay({ todo, onClose, onToggle, onRemove, onEdit }) {
-  // Close on Escape.
+  // The caller closes the detail overlay before opening the edit form.
   useEffect(() => {
     if (!todo) return;
-    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    function onKey(e) {
+      if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.repeat ||
+          e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      const active = document.activeElement;
+      const tag = active?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || active?.isContentEditable) return;
+
+      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+      else if (e.key === 'd') { e.preventDefault(); onRemove(todo.id); onClose(); }
+      else if (e.key === 'i' || e.key === 'a') { e.preventDefault(); onClose(); onEdit(todo); }
+      else if (e.key === 'x') { e.preventDefault(); onToggle(todo); onClose(); }
+    }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [todo, onClose]);
+  }, [todo, onClose, onToggle, onRemove, onEdit]);
 
   return (
     <AnimatePresence>
@@ -97,6 +108,12 @@ export default function DetailOverlay({ todo, onClose, onToggle, onRemove, onEdi
               >
                 {todo.done ? 'Send it up again' : 'Mark done'}
               </button>
+            </div>
+            <div className="modal-kbd-hints">
+              <span><kbd>d</kbd> delete</span><span className="hint-sep">·</span>
+              <span><kbd>i/a</kbd> edit</span><span className="hint-sep">·</span>
+              <span><kbd>x</kbd> {todo.done ? 'mark active' : 'mark done'}</span><span className="hint-sep">·</span>
+              <span><kbd>esc</kbd> close</span>
             </div>
           </motion.div>
         </motion.div>
