@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
+cd "$(dirname "$0")/.."
+echo 'Starting Buoy dev at http://localhost:5173 (Ctrl+C to stop).'
+exec docker compose up

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
+cd "$(dirname "$0")/.."
+echo 'Rebuilding Buoy dev dependencies and starting at http://localhost:5173.'
+exec docker compose up --build --renew-anon-volumes
