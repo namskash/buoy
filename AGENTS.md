@@ -25,3 +25,4 @@ not modify them without the user's permission.
 
 - For a non-technical user, follow [`docs/NON_TECHNICAL_SETUP.md`](docs/NON_TECHNICAL_SETUP.md).
 - For development and production workflows, see [`README.md`](README.md).
+- After implementing a significant change, update `README.md` to reflect it.
