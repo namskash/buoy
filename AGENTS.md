@@ -1,29 +1,27 @@
-# AGENTS.md
+# Buoy — agent guide
 
-If you are an AI coding agent (Claude Code, Copilot CLI, Cursor agent, etc.)
-helping a **non-technical user** set up or run this project, **read
-[`docs/NON_TECHNICAL_SETUP.md`](docs/NON_TECHNICAL_SETUP.md) first** and
-follow it step by step.
+Buoy is a floating-bubble todo app. The React/Vite frontend uses matter.js for
+physics; the Node/Express backend stores tasks in Markdown and syncs changes
+through WebSockets.
 
-That file tells you how to:
+## Where to look
 
-- Verify the user has Docker and Docker Compose installed and running.
-- Check that the required ports are free.
-- Start the app, monitor for the "ready" signals, and report success in
-  plain language.
-- Avoid common destructive mistakes (modifying user data, installing system
-  software without permission, etc.).
+- `frontend/src/` — UI, physics, API client, and todo state.
+- `backend/src/` — API routes, Markdown storage and file watching, and WebSockets.
+  Backend tests are in `backend/test/`.
+- `docs/notes/` — architecture and interaction notes; see
+  [`11-keyboard-ux-patterns.md`](docs/notes/11-keyboard-ux-patterns.md) for
+  keyboard behavior.
+- `docs/design_handoff_buoy/` — design reference and prototype, not production code.
+- `bin/` — production build and run scripts; `media/` contains README screenshots.
 
-For technical contributors, the regular [`README.md`](README.md) at the repo
-root is the right entry point — it covers the dev and prod workflows
-directly.
+## User data
 
-## Scripts (`bin/`)
+`data/todos.md` is the live task database, and `data/archive.md` stores archived
+tasks and sections. They are user data, not project feature documentation. Do
+not modify them without the user's permission.
 
-| Command      | What it does                                        |
-| ------------ | --------------------------------------------------- |
-| `prod-build` | `docker build --no-cache -t buoy:prod .` then runs  |
-| `prod-run`   | Runs the last-built `buoy:prod` image               |
+## Setup
 
-A `.envrc` at the repo root adds `bin/` to `PATH` via direnv (`direnv allow`
-once after clone). Without direnv use `./bin/<script>`.
+- For a non-technical user, follow [`docs/NON_TECHNICAL_SETUP.md`](docs/NON_TECHNICAL_SETUP.md).
+- For development and production workflows, see [`README.md`](README.md).
