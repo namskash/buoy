@@ -31,7 +31,6 @@ const CLICK_TOLERANCE = 6;
 const PHYSICS_RADIUS_SCALE = 0.96;
 const WOBBLE_FREQUENCY = 16; // radians per second
 const WOBBLE_DAMPING = 2.7;
-const WOBBLE_AXES = ['xx', 'xy', 'yy'];
 
 // Exact damped-spring step, so the rebound looks the same at different frame rates.
 function advanceWobble(position, velocity, dt) {
@@ -45,10 +44,73 @@ function advanceWobble(position, velocity, dt) {
   ];
 }
 
-function pulseDelay(id) {
+// Intersect the circle with every contact half-plane. Circle arcs remain exact;
+// intersections between adjacent planes form the ends of simultaneous flats.
+function contactOutline(radius, contacts) {
+  const planes = contacts.filter((c) => c.amount > 0).map((c) => ({
+    x: Math.cos(c.angle), y: Math.sin(c.angle), distance: radius * (1 - c.amount),
+  }));
+  if (!planes.length) return 'none';
+  const epsilon = radius * 0.00001;
+  const points = [];
+  function addPoint(x, y) {
+    if (planes.some((p) => p.x * x + p.y * y > p.distance + epsilon)) return;
+    if (x * x + y * y > radius * radius + epsilon * radius) return;
+    if (!points.some((p) => Math.hypot(p.x - x, p.y - y) < epsilon)) points.push({ x, y });
+  }
+  for (let i = 0; i < planes.length; i++) {
+    const a = planes[i];
+    if (a.distance < -radius) return 'path("M 0 0 Z")';
+    const half = Math.sqrt(Math.max(0, radius * radius - a.distance * a.distance));
+    addPoint(a.x * a.distance - a.y * half, a.y * a.distance + a.x * half);
+    addPoint(a.x * a.distance + a.y * half, a.y * a.distance - a.x * half);
+    for (let j = i + 1; j < planes.length; j++) {
+      const b = planes[j];
+      const det = a.x * b.y - a.y * b.x;
+      if (Math.abs(det) < 1e-8) continue;
+      addPoint((a.distance * b.y - a.y * b.distance) / det, (a.x * b.distance - a.distance * b.x) / det);
+    }
+  }
+  if (points.length < 2) return 'path("M 0 0 Z")';
+  const center = points.reduce((sum, p) => ({ x: sum.x + p.x / points.length, y: sum.y + p.y / points.length }), { x: 0, y: 0 });
+  points.sort((a, b) => Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x));
+  const point = (p) => `${(radius + p.x).toFixed(3)} ${(radius + p.y).toFixed(3)}`;
+  let path = `M ${point(points[0])}`;
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+    // With exactly two vertices both directed edges share the same chord;
+    // only the forward edge follows the flat, the other follows the circle.
+    const flat = planes.some((p) => Math.abs(p.x * a.x + p.y * a.y - p.distance) < epsilon && Math.abs(p.x * b.x + p.y * b.y - p.distance) < epsilon && p.x * (b.y - a.y) - p.y * (b.x - a.x) > 0);
+    if (flat) path += ` L ${point(b)}`;
+    else {
+      const angle = (Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x) + 2 * Math.PI) % (2 * Math.PI);
+      path += ` A ${radius} ${radius} 0 ${angle > Math.PI ? 1 : 0} 1 ${point(b)}`;
+    }
+  }
+  return `path("${path} Z")`;
+}
+
+// Intersect visible circles at a shared plane. For containment there is no
+// intersection chord, so divide the distance between centers by radius; this
+// keeps both bubbles visible without overlapping, even for coincident centers.
+function bubbleContact(rA, rB, distance) {
+  if (distance >= rA + rB) return null;
+  const fallback = distance * rA / (rA + rB);
+  const chordA = distance <= Math.abs(rA - rB)
+    ? fallback
+    : (distance * distance + rA * rA - rB * rB) / (2 * distance);
+  // Smoothly approach the symmetric fallback before internal tangency so the
+  // smaller bubble cannot disappear abruptly as containment begins.
+  const blend = Math.min(1, Math.max(0, (distance - Math.abs(rA - rB)) / (0.2 * Math.min(rA, rB))));
+  const sharedPlane = fallback + (chordA - fallback) * blend;
+  return [1 - sharedPlane / rA, 1 - (distance - sharedPlane) / rB];
+}
+
+function pulsePhase(id) {
   let hash = 0;
   for (const char of String(id)) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return `-${(hash % 2500) / 1000}s`;
+  return (hash % 2500) / 2500 * 2 * Math.PI;
 }
 
 // Per-priority buoyancy acceleration (negative = upward in matter's coords).
@@ -180,6 +242,25 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
     container.addEventListener('mousedown', startBubbleDrag);
     container.addEventListener('touchstart', startBubbleDrag, { passive: true });
 
+    // Only pointer-driven movement energizes the pulse, not ambient physics.
+    const pulseBoosts = new Set();
+    let pulseDrag = null;
+    Events.on(mouseConstraint, 'startdrag', ({ body }) => {
+      pulseDrag = { body, x: mouse.position.x, y: mouse.position.y, distance: 0 };
+    });
+    Events.on(mouseConstraint, 'enddrag', () => { pulseDrag = null; });
+    function energizeDraggedBubble() {
+      if (!pulseDrag || mouse.button !== 0) return;
+      const dx = mouse.position.x - pulseDrag.x;
+      const dy = mouse.position.y - pulseDrag.y;
+      pulseDrag.x = mouse.position.x;
+      pulseDrag.y = mouse.position.y;
+      pulseDrag.distance += Math.hypot(dx, dy);
+      if (pulseDrag.distance > CLICK_TOLERANCE && (dx || dy)) pulseBoosts.add(pulseDrag.body);
+    }
+    container.addEventListener('mousemove', energizeDraggedBubble);
+    container.addEventListener('touchmove', energizeDraggedBubble, { passive: true });
+
     // Pull separated bubbles together, fading out near contact so clusters
     // aren't constantly squeezed. Cap each body's total acceleration as the
     // number of neighbours grows; buoyancy remains independent of attraction.
@@ -236,6 +317,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const squishes = new Map();
+    const pulses = new Map();
     const wobbleImpulses = new Map();
 
     const stepPositions = new Map();
@@ -274,14 +356,18 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
           contact.armed = false;
           contact.lastImpact = timestamp;
           const strength = Math.min(0.12, 0.04 + speed * 0.012) * WOBBLE_FREQUENCY;
-          for (const body of [a, b]) {
+          for (const [body, other] of [[a, b], [b, a]]) {
             const id = idsByBody.get(body);
             if (id === undefined) continue;
-            const impulse = wobbleImpulses.get(id) || { xx: 0, xy: 0, yy: 0 };
-            impulse.xx += strength * (0.5 - 1.5 * normal.x * normal.x);
-            impulse.xy -= strength * 1.5 * normal.x * normal.y;
-            impulse.yy += strength * (0.5 - 1.5 * normal.y * normal.y);
-            wobbleImpulses.set(id, impulse);
+            const otherId = idsByBody.get(other);
+            // The ceiling is the only wall with a visible contact surface.
+            if (otherId === undefined && !(other.label === 'wall' && other.position.y < 0)) continue;
+            const key = otherId === undefined ? 'ceiling' : `bubble:${other.id}`;
+            const angle = otherId === undefined ? -Math.PI / 2 : Math.atan2(other.position.y - body.position.y, other.position.x - body.position.x);
+            const impulses = wobbleImpulses.get(id) || new Map();
+            const prior = impulses.get(key);
+            impulses.set(key, { angle, strength: Math.min(2, strength + (prior?.strength || 0)) });
+            wobbleImpulses.set(id, impulses);
           }
         }
         contactImpacts.set(pair.id, contact);
@@ -292,71 +378,100 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
     Events.on(engine, 'collisionEnd', ({ pairs }) => {
       for (const pair of pairs) contactImpacts.delete(pair.id);
     });
-    let previousFrame = 0;
+    let previousFrame = null;
     let rafId = 0;
     function tick(time) {
       const bodies = [...bodiesRef.current.entries()];
       const contacts = new Map();
-      if (!reducedMotion.matches) {
-        for (let i = 0; i < bodies.length; i++) {
-          const [idA, a] = bodies[i];
-          for (let j = i + 1; j < bodies.length; j++) {
-            const [idB, b] = bodies[j];
-            const dx = b.position.x - a.position.x;
-            const dy = b.position.y - a.position.y;
-            const distance = Math.hypot(dx, dy);
-            if (!distance || distance > a.circleRadius + b.circleRadius + 3) continue;
-            const closingSpeed = Math.max(0, -((b.velocity.x - a.velocity.x) * dx + (b.velocity.y - a.velocity.y) * dy) / distance);
-            const amount = Math.min(0.11, 0.05 + closingSpeed * 0.012);
-            const nx = dx / distance;
-            const ny = dy / distance;
-            // Add symmetric deformation tensors, so opposing contacts reinforce
-            // each other and perpendicular contacts don't flip the squash axis.
-            for (const id of [idA, idB]) {
-              const contact = contacts.get(id) || { xx: 0, xy: 0, yy: 0, total: 0 };
-              contact.xx += amount * (0.5 - 1.5 * nx * nx);
-              contact.xy -= amount * 1.5 * nx * ny;
-              contact.yy += amount * (0.5 - 1.5 * ny * ny);
-              contact.total += amount;
-              contacts.set(id, contact);
-            }
-          }
-        }
-      }
-      const elapsed = Math.min(time - (previousFrame || time), 50);
-      const blend = 1 - Math.exp(-elapsed / 90);
+      const pulseDt = previousFrame === null ? 0 : Math.max(0, time - previousFrame) / 1000;
+      const elapsed = Math.min(pulseDt * 1000, 50);
       const dt = elapsed / 1000;
       previousFrame = time;
+      const visible = new Map();
+      // Update all pulse scales before testing any pair so both surfaces use the same frame.
       for (const [id, body] of bodies) {
         const node = nodesRef.current.get(id);
         if (!node) continue;
         node.style.transform = `translate3d(${body.position.x}px, ${body.position.y}px, 0) translate(-50%, -50%)`;
-        const shape = node.querySelector('.bubble-shape');
-        if (!shape) continue;
-        const contact = contacts.get(id);
-        const state = squishes.get(id) || {
-          rest: { xx: 0, xy: 0, yy: 0 },
-          wobble: { xx: 0, xy: 0, yy: 0 },
-          velocity: { xx: 0, xy: 0, yy: 0 },
-        };
-        const impulse = wobbleImpulses.get(id);
-        const limit = contact ? Math.min(1, 0.11 / contact.total) : 0;
-        const deformation = {};
-        for (const axis of WOBBLE_AXES) {
-          if (reducedMotion.matches) {
-            state.rest[axis] = state.wobble[axis] = state.velocity[axis] = 0;
-          } else {
-            state.rest[axis] += ((contact?.[axis] || 0) * limit - state.rest[axis]) * blend;
-            state.velocity[axis] = Math.max(-2, Math.min(2, state.velocity[axis] + (impulse?.[axis] || 0)));
-            [state.wobble[axis], state.velocity[axis]] = advanceWobble(state.wobble[axis], state.velocity[axis], dt);
-          }
-          deformation[axis] = state.rest[axis] + state.wobble[axis];
+        const pulse = node.querySelector('.bubble-pulse');
+        const bubble = node.querySelector('.bubble');
+        if (!pulse || !bubble) continue;
+        const existingPulse = pulses.get(id);
+        const breathing = existingPulse || { phase: pulsePhase(id), energy: 0.4 };
+        const pulseElapsed = existingPulse ? pulseDt : 0;
+        const decay = Math.exp(-pulseElapsed / 5);
+        breathing.phase = (breathing.phase + 2 * Math.PI * (pulseElapsed / 6 + breathing.energy * 5 * (1 - decay) * (1 / 1.5 - 1 / 6))) % (2 * Math.PI);
+        breathing.energy *= decay;
+        if (pulseBoosts.has(body) && !reducedMotion.matches) breathing.energy = 1;
+        const expansion = reducedMotion.matches ? 0 : (1 - Math.cos(breathing.phase)) / 2;
+        const pulseScale = 1 + 0.08 * (1 + 0.35 * breathing.energy) * expansion;
+        pulse.style.transform = `scale(${pulseScale})`;
+        pulses.set(id, breathing);
+        const motionScale = Number(bubble.style.transform.match(/scale\(([^)]+)\)/)?.[1] ?? 1);
+        const scale = Math.max(0, pulseScale * (Number.isFinite(motionScale) ? motionScale : 1));
+        visible.set(id, { bubble, radius: body.circleRadius / PHYSICS_RADIUS_SCALE * scale });
+      }
+      function addContact(id, key, angle, amount) {
+        if (!contacts.has(id)) contacts.set(id, new Map());
+        contacts.get(id).set(key, { angle, amount });
+      }
+      for (let i = 0; i < bodies.length; i++) {
+        const [idA, a] = bodies[i];
+        const surfaceA = visible.get(idA);
+        if (!surfaceA || surfaceA.radius <= 0) continue;
+        if (a.position.y < surfaceA.radius) {
+          addContact(idA, 'ceiling', -Math.PI / 2, 1 - a.position.y / surfaceA.radius);
         }
-        squishes.set(id, state);
-        shape.style.transform = `matrix(${1 + deformation.xx}, ${deformation.xy}, ${deformation.xy}, ${1 + deformation.yy}, 0, 0)`;
+        for (let j = i + 1; j < bodies.length; j++) {
+          const [idB, b] = bodies[j];
+          const surfaceB = visible.get(idB);
+          if (!surfaceB || surfaceB.radius <= 0) continue;
+          const dx = b.position.x - a.position.x;
+          const dy = b.position.y - a.position.y;
+          const depths = bubbleContact(surfaceA.radius, surfaceB.radius, Math.hypot(dx, dy));
+          if (!depths) continue;
+          const angle = Math.atan2(dy, dx);
+          addContact(idA, `bubble:${b.id}`, angle, depths[0]);
+          addContact(idB, `bubble:${a.id}`, angle + Math.PI, depths[1]);
+        }
+      }
+      for (const [id, body] of bodies) {
+        const surface = visible.get(id);
+        if (!surface) continue;
+        const active = contacts.get(id) || new Map();
+        const impulses = wobbleImpulses.get(id) || new Map();
+        const states = squishes.get(id) || new Map();
+        for (const [key, contact] of active) {
+          if (!states.has(key)) states.set(key, { angle: contact.angle, wobble: 0, velocity: 0 });
+        }
+        for (const [key, impulse] of impulses) {
+          if (!states.has(key)) states.set(key, { angle: impulse.angle, wobble: 0, velocity: 0 });
+        }
+        for (const [key, state] of states) {
+          const contact = active.get(key);
+          const impulse = impulses.get(key);
+          if (contact) state.angle = contact.angle;
+          else if (impulse) state.angle = impulse.angle;
+          if (reducedMotion.matches) state.wobble = state.velocity = 0;
+          else {
+            state.velocity = Math.min(2, state.velocity + (impulse?.strength || 0));
+            [state.wobble, state.velocity] = advanceWobble(state.wobble, state.velocity, dt);
+          }
+          if (!contact && Math.abs(state.wobble) < 0.001 && Math.abs(state.velocity) < 0.01) states.delete(key);
+        }
+        squishes.set(id, states);
+        const radius = body.circleRadius / PHYSICS_RADIUS_SCALE;
+        // Contact geometry is a hard minimum: rebound may add compression, but
+        // cannot let the visible surface cross its neighbour or the ceiling.
+        surface.bubble.style.setProperty('--bubble-outline', contactOutline(radius, [...states].map(([key, state]) => ({
+          angle: state.angle,
+          amount: Math.min(2, (active.get(key)?.amount || 0) + Math.max(0, state.wobble)),
+        }))));
       }
       wobbleImpulses.clear();
+      pulseBoosts.clear();
       for (const id of squishes.keys()) if (!bodiesRef.current.has(id)) squishes.delete(id);
+      for (const id of pulses.keys()) if (!bodiesRef.current.has(id)) pulses.delete(id);
       rafId = requestAnimationFrame(tick);
     }
     rafId = requestAnimationFrame(tick);
@@ -365,6 +480,8 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
       cancelAnimationFrame(rafId);
       container.removeEventListener('mousedown', startBubbleDrag);
       container.removeEventListener('touchstart', startBubbleDrag);
+      container.removeEventListener('mousemove', energizeDraggedBubble);
+      container.removeEventListener('touchmove', energizeDraggedBubble);
       clearInterval(bobInterval);
       ro.disconnect();
       Runner.stop(runner);
@@ -483,7 +600,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
                 <span className="bubble-delete-label" aria-hidden="true">{labelById.get(t.id)}</span>
               )}
               <div className="bubble-shape">
-                <div className="bubble-pulse" style={{ animationDelay: pulseDelay(t.id) }}>
+                <div className="bubble-pulse">
                   <motion.div
                     className="bubble"
                     data-vim-selected={selectedId === t.id ? '' : undefined}

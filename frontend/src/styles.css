@@ -539,16 +539,6 @@ body {
   width: 100%;
   height: 100%;
 }
-.bubble-pulse {
-  animation: bubble-breathe 2.5s ease-in-out infinite;
-}
-@keyframes bubble-breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08, 1.06); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bubble-pulse { animation: none; }
-}
 
 /* INNER bubble: framer-motion animates scale/opacity. */
 .bubble {
@@ -565,14 +555,7 @@ body {
   touch-action: none;
   cursor: grab;
   pointer-events: auto;
-  background:
-    radial-gradient(circle at 50% 55%,
-        color-mix(in oklab, var(--bubble-color) 88%, #fff 8%) 0%,
-        var(--bubble-color) 60%,
-        color-mix(in oklab, var(--bubble-color) 88%, #000 12%) 100%);
   box-shadow:
-    inset 0 0 12px rgba(255, 255, 255, 0.20),
-    0 0 0 2px color-mix(in oklab, var(--bubble-color) 75%, transparent),
     0 0 26px color-mix(in oklab, var(--bubble-color) 58%, transparent),
     0 0 58px color-mix(in oklab, var(--bubble-color) 38%, transparent),
     var(--shadow-bubble);
@@ -581,6 +564,20 @@ body {
   --bubble-color: var(--prio-2);
   filter: saturate(calc(0.7 + (var(--p) - 1) * 0.14))
           brightness(calc(0.96 + (var(--p) - 1) * 0.04));
+}
+.bubble::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  clip-path: var(--bubble-outline, none);
+  background:
+    radial-gradient(circle at 50% 55%,
+        color-mix(in oklab, var(--bubble-color) 88%, #fff 8%) 0%,
+        var(--bubble-color) 60%,
+        color-mix(in oklab, var(--bubble-color) 88%, #000 12%) 100%);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.20);
 }
 /* --p is the "urgency level" 1..5 (drives saturation/brightness), inverse of priority 0..4. */
 .bubble[data-priority="0"] { --bubble-color: var(--prio-0); --p: 5; }
@@ -594,6 +591,8 @@ body {
 .bubble[data-done] {
   opacity: 0.4;
   filter: saturate(0.7);
+}
+.bubble[data-done]::before {
   background:
     radial-gradient(circle at 50% 55%,
         color-mix(in oklab, var(--bubble-color) 78%, transparent) 0%,
