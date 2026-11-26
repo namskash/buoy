@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+cd "$(dirname "$0")/.."
+data_dir=$(cd data && pwd -P)
+
+# The image tag may now point to a newer build. Identify the running app by
+# its data mount and published host port instead of its image tag.
+for id in $(docker ps -q --filter "publish=3004"); do
+  mount=$(docker inspect --format '{{range .Mounts}}{{if and (eq .Type "bind") (eq .Destination "/app/data")}}{{.Source}}{{end}}{{end}}' "$id")
+  port=$(docker inspect --format '{{range .NetworkSettings.Ports}}{{range .}}{{if eq .HostPort "3004"}}3004{{end}}{{end}}{{end}}' "$id")
+  if [ "$mount" = "$data_dir" ] && [ -n "$port" ]; then
+    docker stop "$id"
+  fi
+done
+
+exec ./bin/build-prod
