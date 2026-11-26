@@ -534,6 +534,22 @@ body {
   pointer-events: none; /* let inner bubble own the cursor */
 }
 
+/* Separate transforms let contact deformation, breathing, and pop coexist. */
+.bubble-shape, .bubble-pulse {
+  width: 100%;
+  height: 100%;
+}
+.bubble-pulse {
+  animation: bubble-breathe 2.5s ease-in-out infinite;
+}
+@keyframes bubble-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08, 1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bubble-pulse { animation: none; }
+}
+
 /* INNER bubble: framer-motion animates scale/opacity. */
 .bubble {
   position: relative;
