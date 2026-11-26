@@ -1,128 +1,55 @@
-# 11 — Keyboard UX patterns
+# 11 — Keyboard workflow
 
-Notes on keyboard-driven interactions in Buoy and the techniques used to
-implement them cleanly.
+Buoy supports keyboard navigation alongside mouse and touch. Shortcuts are
+ignored while editing text, using modifier keys, or composing text with an IME.
 
----
+## Main view
 
-## The invisible focus proxy
+| Key | Action |
+| --- | --- |
+| `a` | Open Add todo |
+| `j` / `k` | Select the next / previous visible todo in list order |
+| `Space` / `x` | Toggle the selected todo done / active |
+| `Enter` | Open the selected todo's details |
+| `h` / `l` | Move to the previous / next section |
+| `g`, then `1`–`9` | Jump to the corresponding numbered section |
+| `d`, then a bubble's letter | Choose a todo to delete; confirm with `Enter` or `y` |
+| `Esc` | Cancel a pending section jump or delete selection, or clear the selected todo |
 
-**Problem:** The priority field uses a `<input type="range">` slider for mouse
-interaction. Range inputs participate in the tab order, but their keyboard
-behaviour is awkward — you can't intercept digit keys cleanly, and any `0–4`
-keydown that fires while a *real* text input has focus will leak the character
-into that field.
+Selection follows the stable todo list, not the bubbles' constantly changing
+positions. A ring marks the selected bubble. Numbered section markers indicate
+jump targets; `h` / `l` also reach sections beyond the first nine.
 
-**Solution:** Pull the range out of the tab order (`tabIndex={-1}`) and insert
-a tiny invisible `<input type="text" readOnly>` — the *proxy* — in its place.
-The proxy is visually hidden (`opacity:0; width:0; height:0`) so it takes up no
-space and shows no cursor, but it's a real focusable DOM node. All keyboard
-logic lives in its `onKeyDown`.
+## Add todo
 
-```jsx
-// The proxy — invisible, in tab order, owns all keyboard logic
-<input
-  ref={priorityProxyRef}
-  className="priority-proxy"
-  type="text"
-  inputMode="none"   // suppresses mobile soft keyboard
-  readOnly           // prevents any character insertion
-  aria-label="Priority selector — use 0–4 or arrow keys"
-  onKeyDown={onPriorityProxyKey}
-/>
+The dialog opens in **insert mode**, focused on Title. Press `Esc` to enter
+**normal mode**; press it again to close. Closing keeps the draft.
 
-// The visual slider — mouse only, out of tab order
-<input
-  tabIndex={-1}
-  type="range"
-  min="0" max="4" step="1"
-  value={4 - priority}
-  onChange={(e) => setPriority(4 - Number(e.target.value))}
-  aria-hidden="true"
-/>
-```
+| Key | Normal-mode action |
+| --- | --- |
+| `j` / `k` | Preview Title, Priority, or Description without focusing it |
+| `i` | Focus the previewed text field and enter insert mode |
+| `h` / `l` | Adjust the previewed priority (P0 is most urgent) |
+| `0`–`4` | Set the previewed priority directly |
 
-```js
-function onPriorityProxyKey(e) {
-  if (e.key === 'Enter')       { e.preventDefault(); descRef.current?.focus(); return; }
-  if (/^[0-4]$/.test(e.key))  { e.preventDefault(); setPriority(Number(e.key)); return; }
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown')  { e.preventDefault(); setPriority((p) => Math.min(4, p + 1)); return; }
-  if (e.key === 'ArrowRight' || e.key === 'ArrowUp')   { e.preventDefault(); setPriority((p) => Math.max(0, p - 1)); }
-}
-```
+The current mode and preview are shown in the dialog. In insert mode, Enter
+submits the todo, including from Description. Tab and Shift+Tab remain available
+for ordinary focus navigation; clicking a text field enters insert mode. Draft
+line breaks are converted to spaces on submit because the Markdown storage
+format keeps each task on one line.
 
-**Why `readOnly` instead of `disabled`?** Disabled inputs are skipped by the
-tab order entirely. `readOnly` keeps the element focusable but prevents the
-browser from inserting characters — combined with `e.preventDefault()` on every
-handled key, nothing ever reaches the input's value.
+## Todo details
 
-**Why `inputMode="none"`?** On mobile, focusing any text input normally pops
-the soft keyboard. `inputMode="none"` suppresses it for this proxy.
+| Key | Action |
+| --- | --- |
+| `d` | Delete the todo |
+| `i` / `a` | Edit the todo |
+| `x` | Toggle done / active |
+| `Esc` | Close details |
 
-**Focus ring:** The proxy itself stays invisible even when focused. A CSS
-`:has()` rule on the parent `.field` applies the standard focus ring to the
-visible `.priority-track` instead:
+## Priority focus proxy
 
-```css
-.priority-proxy {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  width: 0; height: 0;
-  padding: 0; border: 0;
-}
-.field:has(.priority-proxy:focus-visible) .priority-track {
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-focus);
-}
-```
-
-**When to use this pattern:** Any time you have a custom visual control
-(slider, colour swatch, star rating, segmented button) that needs to live in
-the keyboard tab order and accept specific key inputs, but whose native element
-type doesn't support clean `onKeyDown` interception without side-effects.
-
----
-
-## Global shortcut keys
-
-Single-letter shortcuts (e.g. `a` to open the add modal) are registered on
-`window` via `useEffect`. Two rules keep them safe:
-
-1. **Skip when a real input is focused** — check `document.activeElement.tagName`
-   before acting.
-2. **`e.preventDefault()`** — critical when the shortcut opens a modal that
-   immediately focuses an input. Without it, the keystroke fires, the modal
-   opens, the input receives focus, and the same event is then delivered to
-   the now-focused input, typing the character.
-
-```js
-useEffect(() => {
-  function onKey(e) {
-    if (e.key !== 'a' && e.key !== 'A') return;
-    const tag = document.activeElement?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
-    e.preventDefault(); // must come before setOpen, which schedules a focus
-    setOpen((v) => !v);
-  }
-  window.addEventListener('keydown', onKey);
-  return () => window.removeEventListener('keydown', onKey);
-}, []);
-```
-
----
-
-## Enter-to-advance flow
-
-Rather than submitting on Enter from any field (the default form behaviour),
-each field explicitly routes Enter to the next logical stop:
-
-| Field | Enter goes to |
-|-------|--------------|
-| Title | Priority proxy |
-| Priority proxy | Description |
-| Description | Submit button (focused, not submitted) |
-| Submit button | Submits the form |
-
-This gives a predictable keyboard-only path through the form without the user
-needing to reach for Tab. Tab/Shift-Tab still work normally alongside it.
+The visible priority range is paired with a focusable, read-only proxy input.
+It provides a keyboard stop for Tab users without allowing digit shortcuts to
+leak into text fields. The visible track shows the focus ring; the proxy's
+accessible label includes the current priority.
