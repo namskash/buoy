@@ -1,9 +1,3 @@
-/* Keyboard selection is separate from the physics wrapper's transform. */
-.bubble[data-vim-selected] {
-  outline: 3px solid var(--text);
-  outline-offset: 5px;
-}
-
 .vim-tab-marker {
   display: inline-block;
   margin-right: 6px;

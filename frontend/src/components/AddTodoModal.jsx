@@ -49,6 +49,13 @@ export default function AddTodoModal({ open, onOpen, onClose, onAdd, section }) 
       else onClose();
       return;
     }
+    // Preserve native button activation while allowing Enter to submit from
+    // normal-mode focus, including the priority control.
+    if (mode === 'normal' && e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'BUTTON') {
+      e.preventDefault();
+      if (!e.repeat) formRef.current?.requestSubmit();
+      return;
+    }
     // Native Tab and button behavior always remain available. Normal-mode
     // commands only apply to the form host and the keyboard priority proxy.
     if (mode !== 'normal' || (e.target !== formRef.current && e.target !== priorityProxyRef.current)) return;
@@ -221,11 +228,11 @@ export default function AddTodoModal({ open, onOpen, onClose, onAdd, section }) 
               </div>
               <div className="modal-kbd-hints">
                 {mode === 'insert' ? (
-                  <><span><kbd>esc</kbd> normal mode</span><span className="hint-sep">·</span><span><kbd>enter</kbd> submit</span></>
+                  <span><kbd>esc</kbd> normal mode</span>
                 ) : (
                   <><span><kbd>j/k</kbd> select field</span><span className="hint-sep">·</span>{preview === 'priority' ? <span><kbd>h/l</kbd> priority</span> : <span><kbd>i</kbd> edit</span>}<span className="hint-sep">·</span><span><kbd>esc</kbd> close</span></>
                 )}
-                <span className="hint-sep">·</span><span><kbd>tab</kbd> focus controls</span>
+                <span className="hint-sep">·</span><span><kbd>enter</kbd> submit</span>
               </div>
             </motion.form>
           </motion.div>

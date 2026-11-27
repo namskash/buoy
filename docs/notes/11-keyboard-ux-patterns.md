@@ -8,16 +8,13 @@ ignored while editing text, using modifier keys, or composing text with an IME.
 | Key | Action |
 | --- | --- |
 | `a` | Open Add todo |
-| `j` / `k` | Select the next / previous visible todo in list order |
-| `Space` / `x` | Toggle the selected todo done / active |
-| `Enter` | Open the selected todo's details |
+| `f`, then a bubble's letter | Open a visible todo's details |
 | `h` / `l` | Move to the previous / next section |
 | `g`, then `1`–`9` | Jump to the corresponding numbered section |
-| `d`, then a bubble's letter | Choose a todo to delete; confirm with `Enter` or `y` |
-| `Esc` | Cancel a pending section jump or delete selection, or clear the selected todo |
+| `d`, then a bubble's letter | Choose a todo to delete; confirm with `d` or cancel with `Esc` |
+| `Esc` | Cancel a pending section jump or picker |
 
-Selection follows the stable todo list, not the bubbles' constantly changing
-positions. A ring marks the selected bubble. Numbered section markers indicate
+The picker labels the first 26 visible todos. Numbered section markers indicate
 jump targets; `h` / `l` also reach sections beyond the first nine.
 
 ## Add todo
@@ -31,9 +28,10 @@ The dialog opens in **insert mode**, focused on Title. Press `Esc` to enter
 | `i` | Focus the previewed text field and enter insert mode |
 | `h` / `l` | Adjust the previewed priority (P0 is most urgent) |
 | `0`–`4` | Set the previewed priority directly |
+| `Enter` | Submit the todo |
 
 The current mode and preview are shown in the dialog. In insert mode, Enter
-submits the todo, including from Description. Tab and Shift+Tab remain available
+also submits the todo, including from Description. Tab and Shift+Tab remain available
 for ordinary focus navigation; clicking a text field enters insert mode. Draft
 line breaks are converted to spaces on submit because the Markdown storage
 format keeps each task on one line.
