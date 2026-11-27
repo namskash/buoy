@@ -1017,6 +1017,23 @@ textarea.text-input {
     inset 2px 3px 6px rgba(255, 255, 255, 0.55),
     var(--shadow-1);
 }
+.confirm-todo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.confirm-todo-title {
+  font-size: var(--fs-lg);
+  overflow-wrap: anywhere;
+}
+.confirm-todo-description {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  overflow-wrap: anywhere;
+}
 .detail-title {
   font-family: var(--font-display);
   font-size: var(--fs-lg);

@@ -117,7 +117,7 @@ function pulsePhase(id) {
 // Higher priorities rise; lower priorities drift lower, even within a cluster.
 const BUOYANCY = { 0: -0.00009, 1: -0.000055, 2: -0.000025, 3: -0.000005, 4: 0.000025 };
 
-export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails, selectedId, shellEnabled, onDeleteModeChange }) {
+export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails, shellEnabled, onPickerModeChange, onOpenPickedTodo, section }) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
@@ -129,9 +129,9 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
   // Per-bubble pointer state.
   const pointerStateRef = useRef(new Map()); // id → { startX, startY, moved, longPressTimer }
 
-  // Keyboard-driven delete: 'd' labels the first 26 bubbles a-z, typing a
-  // label picks that bubble, then Enter/y in ConfirmModal deletes it.
-  const [deleteMode, setDeleteMode] = useState(false);
+  // Both pickers use a snapshot so labels cannot shift during live updates.
+  const [pickerMode, setPickerMode] = useState(null); // open or delete
+  const [pickerIds, setPickerIds] = useState([]);
   const [pendingDelete, setPendingDelete] = useState(null); // todo or null
 
   useEffect(() => {
@@ -142,22 +142,24 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
     return () => preference.removeEventListener('change', update);
   }, []);
 
-  const labelById = useMemo(() => {
-    const map = new Map();
-    todos.slice(0, DELETE_LABELS.length).forEach((t, i) => map.set(t.id, DELETE_LABELS[i]));
-    return map;
-  }, [todos]);
+  const labelById = useMemo(() => new Map(
+    pickerIds.map((id, i) => [id, DELETE_LABELS[i]]),
+  ), [pickerIds]);
 
   useEffect(() => {
-    onDeleteModeChange?.(deleteMode || !!pendingDelete);
-  }, [deleteMode, pendingDelete, onDeleteModeChange]);
+    onPickerModeChange?.(pickerMode);
+  }, [pickerMode, onPickerModeChange]);
 
-  useEffect(() => () => onDeleteModeChange?.(false), [onDeleteModeChange]);
+  useEffect(() => () => onPickerModeChange?.(null), [onPickerModeChange]);
 
-  // Opening another interaction cancels delete selection and its confirmation.
+  // Opening another interaction or changing section cancels the picker.
   useEffect(() => {
-    if (!shellEnabled) { setDeleteMode(false); setPendingDelete(null); }
+    if (!shellEnabled) { setPickerMode(null); setPendingDelete(null); }
   }, [shellEnabled]);
+  useEffect(() => {
+    setPickerMode(null);
+    setPendingDelete(null);
+  }, [section]);
 
   useEffect(() => {
     function onKey(e) {
@@ -166,17 +168,30 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
       const active = document.activeElement;
       const tag = active?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || active?.isContentEditable) return;
-      if (!deleteMode) {
-        if (e.key === 'd') { e.preventDefault(); setDeleteMode(true); }
+      if (!pickerMode) {
+        if (e.key === 'd' || e.key === 'f') {
+          e.preventDefault();
+          setPickerIds(todos.slice(0, DELETE_LABELS.length).map((todo) => todo.id));
+          setPickerMode(e.key === 'f' ? 'open' : 'delete');
+        }
         return;
       }
-      if (e.key === 'Escape') { e.preventDefault(); setDeleteMode(false); return; }
+      if (e.key === 'Escape') { e.preventDefault(); setPickerMode(null); return; }
+      if (e.key === 'Tab') { setPickerMode(null); return; }
+      // Consume picker keys, including labels that happen to be shell shortcuts.
+      e.preventDefault();
       const todo = todos.find((t) => labelById.get(t.id) === e.key.toLowerCase());
-      if (todo) { e.preventDefault(); setPendingDelete(todo); }
+      if (!todo) return;
+      if (pickerMode === 'open') {
+        setPickerMode(null);
+        onOpenPickedTodo?.(todo.id);
+      } else {
+        setPendingDelete(todo);
+      }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [shellEnabled, pendingDelete, deleteMode, todos, labelById]);
+  }, [shellEnabled, pendingDelete, pickerMode, todos, labelById, onOpenPickedTodo]);
 
   // ----------------------------------------------------------------
   // matter.js setup (once on mount).
@@ -203,10 +218,10 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
       const opts = { isStatic: true, label: 'wall', restitution: 0.2 };
       const half = WALL_THICKNESS / 2;
       World.add(engine.world, [
-        Bodies.rectangle(width / 2, -half, width + WALL_THICKNESS * 2, WALL_THICKNESS, opts),
-        Bodies.rectangle(width / 2, height + half, width + WALL_THICKNESS * 2, WALL_THICKNESS, opts),
-        Bodies.rectangle(-half, height / 2, WALL_THICKNESS, height + WALL_THICKNESS * 2, opts),
-        Bodies.rectangle(width + half, height / 2, WALL_THICKNESS, height + WALL_THICKNESS * 2, opts),
+        Bodies.rectangle(width / 2, -half, width + WALL_THICKNESS * 2, WALL_THICKNESS, { ...opts, plugin: { edge: 'top' } }),
+        Bodies.rectangle(width / 2, height + half, width + WALL_THICKNESS * 2, WALL_THICKNESS, { ...opts, plugin: { edge: 'bottom' } }),
+        Bodies.rectangle(-half, height / 2, WALL_THICKNESS, height + WALL_THICKNESS * 2, { ...opts, plugin: { edge: 'left' } }),
+        Bodies.rectangle(width + half, height / 2, WALL_THICKNESS, height + WALL_THICKNESS * 2, { ...opts, plugin: { edge: 'right' } }),
       ]);
     }
     rebuildWalls();
@@ -243,7 +258,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
     container.addEventListener('touchstart', startBubbleDrag, { passive: true });
 
     // Only pointer-driven movement energizes the pulse, not ambient physics.
-    const pulseBoosts = new Set();
+    const pulseBoosts = new Map();
     let pulseDrag = null;
     Events.on(mouseConstraint, 'startdrag', ({ body }) => {
       pulseDrag = { body, x: mouse.position.x, y: mouse.position.y, distance: 0 };
@@ -256,7 +271,9 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
       pulseDrag.x = mouse.position.x;
       pulseDrag.y = mouse.position.y;
       pulseDrag.distance += Math.hypot(dx, dy);
-      if (pulseDrag.distance > CLICK_TOLERANCE && (dx || dy)) pulseBoosts.add(pulseDrag.body);
+      if (pulseDrag.distance > CLICK_TOLERANCE && (dx || dy)) {
+        pulseBoosts.set(pulseDrag.body, Math.max(1, pulseBoosts.get(pulseDrag.body) || 0));
+      }
     }
     container.addEventListener('mousemove', energizeDraggedBubble);
     container.addEventListener('touchmove', energizeDraggedBubble, { passive: true });
@@ -339,6 +356,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
         return;
       }
       const idsByBody = new Map([...bodiesRef.current].map(([id, body]) => [body, id]));
+      const { width, height } = container.getBoundingClientRect();
       for (const pair of pairs) {
         const { parentA: a, parentB: b, normal, depth } = pair.collision;
         const previousA = stepPositions.get(a);
@@ -360,14 +378,21 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
             const id = idsByBody.get(body);
             if (id === undefined) continue;
             const otherId = idsByBody.get(other);
-            // The ceiling is the only wall with a visible contact surface.
-            if (otherId === undefined && !(other.label === 'wall' && other.position.y < 0)) continue;
-            const key = otherId === undefined ? 'ceiling' : `bubble:${other.id}`;
-            const angle = otherId === undefined ? -Math.PI / 2 : Math.atan2(other.position.y - body.position.y, other.position.x - body.position.x);
+            const edge = otherId === undefined && other.label === 'wall' ? other.plugin?.edge : null;
+            const nearSide = body.position.x < body.circleRadius + 6 || width - body.position.x < body.circleRadius + 6;
+            const nearHorizontal = body.position.y < body.circleRadius + 6 || height - body.position.y < body.circleRadius + 6;
+            const corner = (edge === 'left' || edge === 'right') ? nearHorizontal : edge === 'bottom' && nearSide;
+            if (otherId === undefined && edge !== 'top' && !corner) continue;
+            const wallAngles = { top: -Math.PI / 2, bottom: Math.PI / 2, left: Math.PI, right: 0 };
+            const key = edge || `bubble:${other.id}`;
+            const angle = edge ? wallAngles[edge] : Math.atan2(other.position.y - body.position.y, other.position.x - body.position.x);
             const impulses = wobbleImpulses.get(id) || new Map();
             const prior = impulses.get(key);
-            impulses.set(key, { angle, strength: Math.min(2, strength + (prior?.strength || 0)) });
+            // Wall impacts compress more deeply and energize the bubble's pulse.
+            const impactStrength = edge ? strength * 1.7 : strength;
+            impulses.set(key, { angle, strength: Math.min(3, impactStrength + (prior?.strength || 0)) });
             wobbleImpulses.set(id, impulses);
+            if (edge) pulseBoosts.set(body, Math.max(1.6, pulseBoosts.get(body) || 0));
           }
         }
         contactImpacts.set(pair.id, contact);
@@ -402,7 +427,9 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
         const decay = Math.exp(-pulseElapsed / 5);
         breathing.phase = (breathing.phase + 2 * Math.PI * (pulseElapsed / 6 + breathing.energy * 5 * (1 - decay) * (1 / 1.5 - 1 / 6))) % (2 * Math.PI);
         breathing.energy *= decay;
-        if (pulseBoosts.has(body) && !reducedMotion.matches) breathing.energy = 1;
+        if (pulseBoosts.has(body) && !reducedMotion.matches) {
+          breathing.energy = Math.max(breathing.energy, pulseBoosts.get(body));
+        }
         const expansion = reducedMotion.matches ? 0 : (1 - Math.cos(breathing.phase)) / 2;
         const pulseScale = 1 + 0.08 * (1 + 0.35 * breathing.energy) * expansion;
         pulse.style.transform = `scale(${pulseScale})`;
@@ -415,12 +442,21 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
         if (!contacts.has(id)) contacts.set(id, new Map());
         contacts.get(id).set(key, { angle, amount });
       }
+      const { width, height } = container.getBoundingClientRect();
       for (let i = 0; i < bodies.length; i++) {
         const [idA, a] = bodies[i];
         const surfaceA = visible.get(idA);
         if (!surfaceA || surfaceA.radius <= 0) continue;
         if (a.position.y < surfaceA.radius) {
-          addContact(idA, 'ceiling', -Math.PI / 2, 1 - a.position.y / surfaceA.radius);
+          addContact(idA, 'top', -Math.PI / 2, 1 - a.position.y / surfaceA.radius);
+        }
+        // At a corner, flatten against both adjacent walls independently.
+        const nearHorizontal = a.position.y < surfaceA.radius || height - a.position.y < surfaceA.radius;
+        const nearSide = a.position.x < surfaceA.radius || width - a.position.x < surfaceA.radius;
+        if (nearHorizontal && nearSide) {
+          if (a.position.x < surfaceA.radius) addContact(idA, 'left', Math.PI, 1 - a.position.x / surfaceA.radius);
+          if (width - a.position.x < surfaceA.radius) addContact(idA, 'right', 0, 1 - (width - a.position.x) / surfaceA.radius);
+          if (height - a.position.y < surfaceA.radius) addContact(idA, 'bottom', Math.PI / 2, 1 - (height - a.position.y) / surfaceA.radius);
         }
         for (let j = i + 1; j < bodies.length; j++) {
           const [idB, b] = bodies[j];
@@ -454,7 +490,7 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
           else if (impulse) state.angle = impulse.angle;
           if (reducedMotion.matches) state.wobble = state.velocity = 0;
           else {
-            state.velocity = Math.min(2, state.velocity + (impulse?.strength || 0));
+            state.velocity = Math.min(3, state.velocity + (impulse?.strength || 0));
             [state.wobble, state.velocity] = advanceWobble(state.wobble, state.velocity, dt);
           }
           if (!contact && Math.abs(state.wobble) < 0.001 && Math.abs(state.velocity) < 0.01) states.delete(key);
@@ -583,6 +619,12 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
 
   return (
     <div ref={containerRef} className="bubble-canvas">
+      <div className="vim-sr-only" role="status" aria-live="polite">
+        {pickerMode && !pendingDelete && pickerIds.map((id, index) => {
+          const todo = todos.find((item) => item.id === id);
+          return todo ? `${DELETE_LABELS[index]}: ${todo.title}. ` : '';
+        })}
+      </div>
       <AnimatePresence>
         {todos.map((t) => {
           const size = RADIUS_FOR(t.priority) * 2;
@@ -596,14 +638,13 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
               className="bubble-wrapper"
               style={{ width: `${size}px`, height: `${size}px` }}
             >
-              {deleteMode && labelById.has(t.id) && (
+              {pickerMode && !pendingDelete && labelById.has(t.id) && (
                 <span className="bubble-delete-label" aria-hidden="true">{labelById.get(t.id)}</span>
               )}
               <div className="bubble-shape">
                 <div className="bubble-pulse">
                   <motion.div
                     className="bubble"
-                    data-vim-selected={selectedId === t.id ? '' : undefined}
                     data-priority={t.priority}
                     data-done={t.done ? '' : undefined}
                     initial={prefersReducedMotion ? false : { scale: 0, opacity: 0 }}
@@ -629,13 +670,14 @@ export default function BubbleCanvas({ todos, onToggle, onRemove, onShowDetails,
       <ConfirmModal
         open={!!pendingDelete}
         title="Delete todo?"
-        message={pendingDelete ? pendingDelete.title : ''}
+        todo={pendingDelete}
+        confirmKey="d"
         confirmLabel="Delete"
-        onClose={() => setPendingDelete(null)}
+        onClose={() => { setPendingDelete(null); setPickerMode(null); }}
         onConfirm={() => {
           if (pendingDelete) onRemove?.(pendingDelete.id);
           setPendingDelete(null);
-          setDeleteMode(false);
+          setPickerMode(null);
         }}
       />
     </div>
